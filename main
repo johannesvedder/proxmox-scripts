@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "🔧 Starting Proxmox Post-Install Setup..."
+
+# TODO Show menu where you can select the scripts
+
+echo "✅ Setup complete."
