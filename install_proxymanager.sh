@@ -251,11 +251,13 @@ echo ""
 echo "🎉 Installation complete! Happy proxying! 🎉"
 EOF'
 
-# Make the setup script executable
+# Make the setup script executable and run it
 pct exec $CTID -- chmod +x /tmp/setup_npm.sh
+echo "▶️ Running setup script inside container..."
+pct exec $CTID -- /tmp/setup_npm.sh
 
 echo ""
-echo "✅ Container $CTID is ready!"
+echo "✅ Container $CTID is ready and setup completed!"
 echo "📋 Container Details:"
 echo "   CTID: $CTID"
 echo "   Hostname: $HOSTNAME"
