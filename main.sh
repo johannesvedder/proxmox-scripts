@@ -1,4 +1,14 @@
 #!/bin/bash
+# Usage: bash -c "$(curl -fsSL https://raw.githubusercontent.com/johannesvedder/proxmox-scripts/refs/heads/main/main.sh)"
+
+if ! command -v git >/dev/null 2>&1; then
+    apt update
+    apt install -y git
+fi
+if ! command -v bash >/dev/null 2>&1; then
+    apt update
+    apt install -y bash
+fi
 
 echo "🔧 Downloading Proxmox Scripts..."
 
