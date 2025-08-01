@@ -29,7 +29,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ========= Get Template =========
 if [[ "$TEMPLATE" == "alpine" ]]; then
-  TEMPLATE_PATH=$("$SCRIPT_DIR/../packages/alpine.sh" | grep -oP '(?<=Template already exists locally: |Template downloaded: ).*')
+  TEMPLATE_PATH=$("$SCRIPT_DIR/../packages/alpine.sh")
 else
   echo "❌ Unsupported template: $TEMPLATE"
   exit 1

@@ -19,14 +19,16 @@ TEMPLATE_PATH="${TEMPLATE_DIR}/${TEMPLATE_NAME}"
 
 # ========== CHECK LOCAL TEMPLATE ==========
 if [[ -f "$TEMPLATE_PATH" ]]; then
-  echo "✅ Template already exists locally: $TEMPLATE_NAME"
+  echo "✅ Template already exists locally: $TEMPLATE_NAME" >&2
 else
-  echo "⬇️  Downloading template: $TEMPLATE_NAME"
+  echo "⬇️  Downloading template: $TEMPLATE_NAME" >&2
   pveam download local "$TEMPLATE_NAME"
   if [[ $? -ne 0 ]]; then
-    echo "❌ Failed to download the template."
+    echo "❌ Failed to download the template." >&2
     exit 1
   fi
-  echo "✅ Template downloaded: $TEMPLATE_NAME"
+  echo "✅ Template downloaded: $TEMPLATE_NAME" >&2
 fi
+
+# Output the template path to stdout (separate from status messages)
 echo "$TEMPLATE_PATH"
