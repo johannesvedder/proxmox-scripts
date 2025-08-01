@@ -1,26 +1,61 @@
 #!/bin/bash
-# Usage: bash install_proxymanager [ctid] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
-# ctid: container id (default: auto-generated next available ID)
-# hostname: container hostname (default: alpine-npm)
-# password: root password (default: changeme)
-# storage: storage pool (default: local-lvm)
-# bridge: network bridge (default: vmbr1)
-# cores: CPU cores (default: 2)
-# memory: RAM in MB (default: 1024)
-# swap: swap in MB (default: 512)
-# disk: disk size in GB (default: 4)
+# Usage bash install_proxymanager.sh
 
-CTID="${1:-$(pvesh get /cluster/nextid)}"
-HOSTNAME="${2:-alpine-npm}"
-PASSWORD="${3:-changeme}"
-STORAGE="${4:-local-lvm}"
-BRIDGE="${5:-vmbr1}"
-CORES="${6:-2}"
-MEMORY="${7:-1024}"
-SWAP="${8:-512}"
-DISK="${9:-4}"  # in GB
+set -e
 
-# TODO
+# === Defaults ===
+CTID=""
+TEMPLATE="alpine"
+HOSTNAME="nginx-proxy-manager"
+PASSWORD="changeme"
+STORAGE="local-lvm"
+BRIDGE="vmbr1"
+CORES="2"
+MEMORY="1024"
+SWAP="512"
+DISK="4"
+
+# === Parse Flags ===
+PARSED=$(getopt -o "" \
+  --long ctid:,template:,hostname:,password:,storage:,bridge:,cores:,memory:,swap:,disk: \
+  -- "$@")
+
+if [[ $? -ne 0 ]]; then
+  echo "❌ Failed to parse arguments."
+  exit 1
+fi
+
+eval set -- "$PARSED"
+
+while true; do
+  case "$1" in
+    --ctid) CTID="$2"; shift 2 ;;
+    --template) TEMPLATE="$2"; shift 2 ;;
+    --hostname) HOSTNAME="$2"; shift 2 ;;
+    --password) PASSWORD="$2"; shift 2 ;;
+    --storage) STORAGE="$2"; shift 2 ;;
+    --bridge) BRIDGE="$2"; shift 2 ;;
+    --cores) CORES="$2"; shift 2 ;;
+    --memory) MEMORY="$2"; shift 2 ;;
+    --swap) SWAP="$2"; shift 2 ;;
+    --disk) DISK="$2"; shift 2 ;;
+    --) shift; break ;;
+    *) echo "❌ Invalid option: $1"; exit 1 ;;
+  esac
+done
+
+# === Run container creation ===
+bash ../proxmox/container.sh \
+  "$CTID" \
+  "$TEMPLATE" \
+  "$HOSTNAME" \
+  "$PASSWORD" \
+  "$STORAGE" \
+  "$BRIDGE" \
+  "$CORES" \
+  "$MEMORY" \
+  "$SWAP" \
+  "$DISK"
 
 # Create the setup script inside the container
 echo "📝 Creating setup script inside container..."
