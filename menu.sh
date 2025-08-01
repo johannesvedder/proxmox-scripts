@@ -22,7 +22,7 @@ HIDE_CURSOR='\033[?25l'
 SHOW_CURSOR='\033[?25h'
 
 # Global variables
-ROOT_DIR="repository"
+ROOT_DIR="$(dirname "$0")/repository"
 current_selection=0
 menu_items=()
 item_types=()
@@ -235,4 +235,7 @@ main() {
     cleanup
 }
 
-main "$@"
+# Check if script is being run directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
