@@ -29,3 +29,4 @@ else
   fi
   echo "✅ Template downloaded: $TEMPLATE_NAME"
 fi
+echo "$TEMPLATE_PATH"
