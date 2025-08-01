@@ -45,7 +45,7 @@ while true; do
 done
 
 # === Run container creation ===
-bash ../proxmox/container.sh \
+bash "$(dirname "$0")/../../proxmox/container.sh" \
   "$CTID" \
   "$TEMPLATE" \
   "$HOSTNAME" \
