@@ -42,18 +42,28 @@ fi
 
 # ========= Create Container =========
 echo "📦 Creating container CTID $CTID with template $TEMPLATE_PATH..."
-pct create "$CTID" "$TEMPLATE_PATH" \
-  # todo only hostname if set --hostname $HOSTNAME \
-  --password $PASSWORD \
-  --cores "$CORES" \
-  --memory "$MEMORY" \
-  --swap "$SWAP" \
-  --rootfs "$STORAGE:${DISK}" \
-  --net0 name=eth0,bridge=$BRIDGE,ip=dhcp \
-  --features nesting=1,keyctl=1 \
-  --unprivileged 1 \
-  --onboot 1 \
+
+CMD=(pct create "$CTID" "$TEMPLATE_PATH")
+
+# Optional: Add --hostname only if HOSTNAME is set
+[[ -n "$HOSTNAME" ]] && CMD+=(--hostname "$HOSTNAME")
+
+# Required and optional flags
+CMD+=(
+  --password "$PASSWORD"
+  --cores "$CORES"
+  --memory "$MEMORY"
+  --swap "$SWAP"
+  --rootfs "$STORAGE:${DISK}"
+  --net0 "name=eth0,bridge=${BRIDGE},ip=dhcp"
+  --features nesting=1,keyctl=1
+  --unprivileged 1
+  --onboot 1
   --start 1
+)
+
+# Run the command
+"${CMD[@]}"
 
 if [[ $? -ne 0 ]]; then
     echo "❌ Failed to create container $CTID"
