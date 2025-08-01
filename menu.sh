@@ -129,7 +129,7 @@ display_menu() {
 execute_script() {
     local script_path="$ROOT_DIR/${item_paths[current_selection]}"
 
-    if [[ -f "$script_path" && -x "$script_path" ]]; then
+    if [[ -f "$script_path" ]]; then
         echo -e "\n${GREEN}Executing: $script_path${NC}"
         echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
@@ -145,7 +145,7 @@ execute_script() {
         echo -e "${YELLOW}Script execution completed. Press any key to return to menu...${NC}"
         read -n 1 -s
     else
-        echo -e "\n${RED}Error: Script not found or not executable: $script_path${NC}"
+        echo -e "\n${RED}Error: Script not found: $script_path${NC}"
         echo -e "${YELLOW}Press any key to continue...${NC}"
         read -n 1 -s
     fi
