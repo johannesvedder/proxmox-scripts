@@ -1,7 +1,49 @@
-# ========== CREATE CONTAINER ==========
-echo "🚀 Creating LXC container with CTID $CTID..."
+#!/bin/bash
+# Usage: bash container.sh [ctid] [template] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
+# ctid: container id (default: auto-generated next available ID)
+# tempalate: name of the template that should be used (default: alpine)
+# hostname: container hostname
+# password: root password (default: changeme)
+# storage: storage pool (default: local-lvm)
+# bridge: network bridge (default: vmbr1)
+# cores: CPU cores (default: 2)
+# memory: RAM in MB (default: 1024)
+# swap: swap in MB (default: 512)
+# disk: disk size in GB (default: 4)
+
+set -e
+
+CTID="${1:-$(pvesh get /cluster/nextid)}"
+TEMPLATE="${2}"
+HOSTNAME="${3}"
+PASSWORD="${4:-changeme}"
+STORAGE="${5:-local-lvm}"
+BRIDGE="${6:-vmbr1}"
+CORES="${7:-2}"
+MEMORY="${8:-1024}"
+SWAP="${9:-512}"
+DISK="${10:-4}"  # in GB
+
+# Ensure script is running from the correct location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ========= Get Template =========
+if [[ "$TEMPLATE" == "alpine" ]]; then
+  TEMPLATE_PATH=$("$SCRIPT_DIR/alpine.sh" | grep -oP '(?<=Template already exists locally: |Template downloaded: ).*')
+else
+  echo "❌ Unsupported template: $TEMPLATE"
+  exit 1
+fi
+
+if [[ -z "$TEMPLATE_PATH" ]]; then
+  echo "❌ Failed to retrieve template path"
+  exit 1
+fi
+
+# ========= Create Container =========
+echo "📦 Creating container CTID $CTID with template $TEMPLATE_PATH..."
 pct create "$CTID" "$TEMPLATE_PATH" \
-  --hostname $HOSTNAME \
+  # todo only hostname if set --hostname $HOSTNAME \
   --password $PASSWORD \
   --cores "$CORES" \
   --memory "$MEMORY" \
