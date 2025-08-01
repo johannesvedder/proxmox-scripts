@@ -21,45 +21,32 @@ SWAP="${8:-512}"
 DISK="${9:-4}"  # in GB
 
 TEMPLATE_DIR="/var/lib/vz/template/cache"
-ARCH="amd64"
-DISTRO="alpine"
-BASE_URL="https://images.linuxcontainers.org/images/${DISTRO}/${ARCH}/default"
 
-# ========== DETECT LATEST VERSION ==========
-echo "🔍 Checking for latest Alpine version..."
-LATEST_VERSION=$(curl -s "$BASE_URL/" | grep -oE '[0-9]+\.[0-9]+' | sort -V | uniq | tail -n 1)
+# ========== GET LATEST ALPINE TEMPLATE ==========
+echo "🔍 Updating available templates list..."
+pveam update
 
-if [[ -z "$LATEST_VERSION" ]]; then
-  echo "❌ Failed to fetch latest Alpine version."
+echo "🔍 Finding latest Alpine template..."
+TEMPLATE_NAME=$(pveam available --section system | grep "alpine.*amd64" | sort -V | tail -n 1 | awk '{print $2}')
+
+if [[ -z "$TEMPLATE_NAME" ]]; then
+  echo "❌ Failed to find Alpine template."
   exit 1
 fi
 
-BUILD_URL="${BASE_URL}/${LATEST_VERSION}/"
-LATEST_BUILD=$(curl -s "$BUILD_URL" | grep -oE '[0-9]{8}_[0-9]{2}:[0-9]{2}' | sort -r | head -n 1)
-
-if [[ -z "$LATEST_BUILD" ]]; then
-  echo "❌ Failed to fetch build timestamp."
-  exit 1
-fi
-
-# ========== SET TEMPLATE NAME ==========
-TEMPLATE_NAME="alpine-${LATEST_VERSION}-default_${LATEST_BUILD}_${ARCH}.tar.xz"
 TEMPLATE_PATH="${TEMPLATE_DIR}/${TEMPLATE_NAME}"
-REMOTE_URL="${BUILD_URL}${LATEST_BUILD}/rootfs.tar.xz"
 
 # ========== CHECK LOCAL TEMPLATE ==========
 if [[ -f "$TEMPLATE_PATH" ]]; then
   echo "✅ Template already exists locally: $TEMPLATE_NAME"
 else
-  echo "⬇️  Downloading new template: $TEMPLATE_NAME"
-  mkdir -p "$TEMPLATE_DIR"
-  wget -q -O "$TEMPLATE_PATH" "$REMOTE_URL"
+  echo "⬇️  Downloading template: $TEMPLATE_NAME"
+  pveam download local "$TEMPLATE_NAME"
   if [[ $? -ne 0 ]]; then
     echo "❌ Failed to download the template."
-    rm -f "$TEMPLATE_PATH"
     exit 1
   fi
-  echo "✅ Template downloaded to $TEMPLATE_PATH"
+  echo "✅ Template downloaded: $TEMPLATE_NAME"
 fi
 
 # ========== CREATE CONTAINER ==========
