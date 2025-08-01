@@ -125,8 +125,6 @@ cd /opt/nginx-proxy-manager
 # Create docker-compose.yml
 echo "Creating docker-compose.yml..."
 cat <<COMPOSE_EOF > docker-compose.yml
-version: '\''3.8'\''
-
 services:
   nginx-proxy-manager:
     image: '\''jc21/nginx-proxy-manager:latest'\''
