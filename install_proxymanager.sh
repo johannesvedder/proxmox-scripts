@@ -1,41 +1,292 @@
-# TODO create alpine latest lxc with 2 vCPU, 1 GB RAM, 4 GB Disk
+#!/bin/bash
+# Usage: bash -c "$(curl -fsSL <RAW_URL>)" -- [ctid] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
+# ctid: container id (default: auto-generated next available ID)
+# hostname: container hostname (default: alpine-npm)
+# password: root password (default: changeme)
+# storage: storage pool (default: local-lvm)
+# bridge: network bridge (default: vmbr1)
+# cores: CPU cores (default: 2)
+# memory: RAM in MB (default: 1024)
+# swap: swap in MB (default: 512)
+# disk: disk size in GB (default: 4)
 
-# Install Docker
+CTID="${1:-$(pvesh get /cluster/nextid)}"
+HOSTNAME="${2:-alpine-npm}"
+PASSWORD="${3:-changeme}"
+STORAGE="${4:-local-lvm}"
+BRIDGE="${5:-vmbr1}"
+CORES="${6:-2}"
+MEMORY="${7:-1024}"
+SWAP="${8:-512}"
+DISK="${9:-4}"  # in GB
+
+TEMPLATE_DIR="/var/lib/vz/template/cache"
+ARCH="amd64"
+DISTRO="alpine"
+BASE_URL="https://images.linuxcontainers.org/images/${DISTRO}/${ARCH}/default"
+
+# ========== DETECT LATEST VERSION ==========
+echo "🔍 Checking for latest Alpine version..."
+LATEST_VERSION=$(curl -s "$BASE_URL/" | grep -oE '[0-9]+\.[0-9]+' | sort -V | uniq | tail -n 1)
+
+if [[ -z "$LATEST_VERSION" ]]; then
+  echo "❌ Failed to fetch latest Alpine version."
+  exit 1
+fi
+
+BUILD_URL="${BASE_URL}/${LATEST_VERSION}/"
+LATEST_BUILD=$(curl -s "$BUILD_URL" | grep -oE '[0-9]{8}_[0-9]{2}:[0-9]{2}' | sort -r | head -n 1)
+
+if [[ -z "$LATEST_BUILD" ]]; then
+  echo "❌ Failed to fetch build timestamp."
+  exit 1
+fi
+
+# ========== SET TEMPLATE NAME ==========
+TEMPLATE_NAME="alpine-${LATEST_VERSION}-default_${LATEST_BUILD}_${ARCH}.tar.xz"
+TEMPLATE_PATH="${TEMPLATE_DIR}/${TEMPLATE_NAME}"
+REMOTE_URL="${BUILD_URL}${LATEST_BUILD}/rootfs.tar.xz"
+
+# ========== CHECK LOCAL TEMPLATE ==========
+if [[ -f "$TEMPLATE_PATH" ]]; then
+  echo "✅ Template already exists locally: $TEMPLATE_NAME"
+else
+  echo "⬇️  Downloading new template: $TEMPLATE_NAME"
+  mkdir -p "$TEMPLATE_DIR"
+  wget -q -O "$TEMPLATE_PATH" "$REMOTE_URL"
+  if [[ $? -ne 0 ]]; then
+    echo "❌ Failed to download the template."
+    rm -f "$TEMPLATE_PATH"
+    exit 1
+  fi
+  echo "✅ Template downloaded to $TEMPLATE_PATH"
+fi
+
+# ========== CREATE CONTAINER ==========
+echo "🚀 Creating LXC container with CTID $CTID..."
+pct create "$CTID" "$TEMPLATE_PATH" \
+  --hostname $HOSTNAME \
+  --password $PASSWORD \
+  --cores "$CORES" \
+  --memory "$MEMORY" \
+  --swap "$SWAP" \
+  --rootfs "$STORAGE:${DISK}" \
+  --net0 name=eth0,bridge=$BRIDGE,ip=dhcp \
+  --features nesting=1,keyctl=1 \
+  --unprivileged 1 \
+  --onboot 1 \
+  --start 1
+
+if [[ $? -ne 0 ]]; then
+    echo "❌ Failed to create container $CTID"
+    exit 1
+fi
+
+echo "✅ Container $CTID created and starting..."
+
+# Wait for container to boot
+echo "⏳ Waiting for container to boot..."
+sleep 15
+
+# Get the container IP (retry a few times)
+CONTAINER_IP=""
+for i in {1..5}; do
+    CONTAINER_IP=$(pct exec $CTID -- ip -4 addr show dev eth0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -1)
+    if [[ -n "$CONTAINER_IP" ]]; then
+        break
+    fi
+    echo "Waiting for network... ($i/5)"
+    sleep 3
+done
+
+if [[ -n "$CONTAINER_IP" ]]; then
+    echo "✅ Container IP: $CONTAINER_IP"
+else
+    echo "⚠️  Could not determine container IP, but container is running"
+fi
+
+# Create the setup script inside the container
+echo "📝 Creating setup script inside container..."
+pct exec $CTID -- sh -c 'cat > /tmp/setup_npm.sh << '\''EOF'\''
+#!/bin/sh
+# Alpine LXC Setup with Docker and Nginx Proxy Manager
+
+set -e
+
+echo "=== Alpine LXC Docker & Nginx Proxy Manager Setup ==="
+
+# Update system and install required packages
+echo "Updating Alpine and installing Docker..."
 apk update
-apk add docker
+apk add --no-cache docker docker-compose curl openrc
+
+# Start and enable Docker
+echo "Starting Docker service..."
 rc-service docker start
 rc-update add docker default
-service docker start
-addgroup ${USER} docker
+
+# Verify Docker installation
+echo "Docker version:"
 docker --version
+docker-compose --version
 
-# Install nginx proxymanager
+# Create directory structure for Nginx Proxy Manager
+echo "Creating Nginx Proxy Manager directory structure..."
+mkdir -p /opt/nginx-proxy-manager/{data,letsencrypt,config}
+cd /opt/nginx-proxy-manager
 
-# todo create docker-compose.yml
-# todo add:
+# Create docker-compose.yml
+echo "Creating docker-compose.yml..."
+cat <<COMPOSE_EOF > docker-compose.yml
+version: '\''3.8'\''
+
 services:
-  app:
-    image: 'jc21/nginx-proxy-manager:latest'
+  nginx-proxy-manager:
+    image: '\''jc21/nginx-proxy-manager:latest'\''
+    container_name: nginx-proxy-manager
     restart: unless-stopped
     ports:
-      # These ports are in format <host-port>:<container-port>
-      - '80:80' # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
-      # Add any other Stream port you want to expose
-      # - '21:21' # FTP
-
-    #environment:
-      # Uncomment this if you want to change the location of
-      # the SQLite DB file within the container
-      # DB_SQLITE_FILE: "/data/database.sqlite"
-
-      # Uncomment this if IPv6 is not enabled on your host
-      # DISABLE_IPV6: 'true'
-
+      # Public HTTP Port
+      - '\''80:80'\''
+      # Public HTTPS Port  
+      - '\''443:443'\''
+      # Admin Web Port
+      - '\''81:81'\''
+    environment:
+      # Optional: Set timezone
+      TZ: '\''UTC'\''
     volumes:
+      - ./config:/app/config
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
-docker compose up -d
+    healthcheck:
+      test: ["CMD", "/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - proxy-network
 
-# todo configure proxymanager so that i can add subdomains and link them to my services in other proxmox containers e.g. app1.mydomain.example -> app1 container
+networks:
+  proxy-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+COMPOSE_EOF
+
+# Create initial configuration directory structure
+mkdir -p config data letsencrypt
+chmod 755 config data letsencrypt
+
+# Start Nginx Proxy Manager
+echo "Starting Nginx Proxy Manager..."
+docker-compose up -d
+
+# Wait for container to be ready
+echo "Waiting for Nginx Proxy Manager to start..."
+sleep 15
+
+# Check if container is running
+if docker-compose ps | grep -q "nginx-proxy-manager.*Up"; then
+    echo "✅ Nginx Proxy Manager is running successfully!"
+else
+    echo "❌ Nginx Proxy Manager failed to start. Checking logs..."
+    docker-compose logs
+    exit 1
+fi
+
+# Display access information
+NPM_CONTAINER_IP=$(docker inspect nginx-proxy-manager | grep '\''\"IPAddress\"'\'' | tail -1 | cut -d'\''"'\'' -f4)
+HOST_IP=$(ip route get 1 | awk '\''{print $7; exit}'\'')
+
+echo ""
+echo "=== Setup Complete! ==="
+echo ""
+echo "🌐 Nginx Proxy Manager Admin Interface:"
+echo "   URL: http://$HOST_IP:81"
+echo "   Default Email: admin@example.com"
+echo "   Default Password: changeme"
+echo ""
+echo "📋 Container Information:"
+echo "   NPM Container IP: $NPM_CONTAINER_IP"
+echo "   Host IP: $HOST_IP"
+echo "   HTTP Port: 80"
+echo "   HTTPS Port: 443"
+echo "   Admin Port: 81"
+echo ""
+echo "🔧 Next Steps:"
+echo "1. Access the admin interface and change the default password"
+echo "2. Add your domain DNS records pointing to this server IP: $HOST_IP"
+echo "3. Create proxy hosts for your services"
+echo ""
+
+# Create helper script for managing the service
+cat <<MANAGE_EOF > /opt/nginx-proxy-manager/manage.sh
+#!/bin/bash
+# Nginx Proxy Manager Management Script
+
+case "\$1" in
+    start)
+        echo "Starting Nginx Proxy Manager..."
+        cd /opt/nginx-proxy-manager && docker-compose up -d
+        ;;
+    stop)
+        echo "Stopping Nginx Proxy Manager..."
+        cd /opt/nginx-proxy-manager && docker-compose down
+        ;;
+    restart)
+        echo "Restarting Nginx Proxy Manager..."
+        cd /opt/nginx-proxy-manager && docker-compose restart
+        ;;
+    logs)
+        echo "Showing Nginx Proxy Manager logs..."
+        cd /opt/nginx-proxy-manager && docker-compose logs -f
+        ;;
+    status)
+        echo "Nginx Proxy Manager status:"
+        cd /opt/nginx-proxy-manager && docker-compose ps
+        ;;
+    update)
+        echo "Updating Nginx Proxy Manager..."
+        cd /opt/nginx-proxy-manager && docker-compose pull && docker-compose up -d
+        ;;
+    *)
+        echo "Usage: \$0 {start|stop|restart|logs|status|update}"
+        exit 1
+        ;;
+esac
+MANAGE_EOF
+
+chmod +x /opt/nginx-proxy-manager/manage.sh
+ln -sf /opt/nginx-proxy-manager/manage.sh /usr/local/bin/npm-manage
+
+echo "🛠️  Management script created: npm-manage {start|stop|restart|logs|status|update}"
+echo ""
+echo "🎉 Installation complete! Happy proxying! 🎉"
+EOF'
+
+# Make the setup script executable
+pct exec $CTID -- chmod +x /tmp/setup_npm.sh
+
+echo ""
+echo "✅ Container $CTID is ready!"
+echo "📋 Container Details:"
+echo "   CTID: $CTID"
+echo "   Hostname: $HOSTNAME"
+echo "   IP: ${CONTAINER_IP:-'DHCP (check with: pct exec $CTID -- ip addr)'}"
+echo "   Cores: $CORES"
+echo "   Memory: ${MEMORY}MB"
+echo "   Disk: ${DISK}GB"
+echo ""
+echo "🚀 Next Steps:"
+echo "1. Run the setup script inside the container:"
+echo "   pct exec $CTID -- /tmp/setup_npm.sh"
+echo ""
+echo "2. Or enter the container and run it manually:"
+echo "   pct enter $CTID"
+echo "   /tmp/setup_npm.sh"
+echo ""
+echo "3. Access Nginx Proxy Manager:"
+echo "   http://${CONTAINER_IP:-CONTAINER_IP}:81"
+echo "   Default: admin@example.com / changeme"
