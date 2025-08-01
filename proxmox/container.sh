@@ -88,7 +88,10 @@ for i in {1..5}; do
 done
 
 if [[ -n "$CONTAINER_IP" ]]; then
-    echo "✅ Container IP: $CONTAINER_IP"
+    echo "✅ Container IP: $CONTAINER_IP" >&2
 else
-    echo "⚠️  Could not determine container IP, but container is running"
+    echo "⚠️  Could not determine container IP, but container is running" >&2
 fi
+
+# Output the CTID to stdout for capture by calling script
+echo "$CTID"

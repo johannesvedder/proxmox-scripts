@@ -45,7 +45,7 @@ while true; do
 done
 
 # === Run container creation ===
-bash "$(dirname "$0")/../../proxmox/container.sh" \
+CTID=$(bash "$(dirname "$0")/../../proxmox/container.sh" \
   "$CTID" \
   "$TEMPLATE" \
   "$HOSTNAME" \
@@ -55,7 +55,7 @@ bash "$(dirname "$0")/../../proxmox/container.sh" \
   "$CORES" \
   "$MEMORY" \
   "$SWAP" \
-  "$DISK"
+  "$DISK")
 
 # Execute setup commands directly inside the container
 echo "🚀 Setting up Alpine LXC with Docker and Nginx Proxy Manager..."
