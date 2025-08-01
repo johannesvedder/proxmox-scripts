@@ -1,24 +1,5 @@
 #!/bin/bash
-# Usage: bash alpine.sh [ctid] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
-# ctid: container id (default: auto-generated next available ID)
-# hostname: container hostname (default: alpine-npm)
-# password: root password (default: changeme)
-# storage: storage pool (default: local-lvm)
-# bridge: network bridge (default: vmbr1)
-# cores: CPU cores (default: 2)
-# memory: RAM in MB (default: 1024)
-# swap: swap in MB (default: 512)
-# disk: disk size in GB (default: 4)
-
-CTID="${1:-$(pvesh get /cluster/nextid)}"
-HOSTNAME="${2:-alpine-npm}"
-PASSWORD="${3:-changeme}"
-STORAGE="${4:-local-lvm}"
-BRIDGE="${5:-vmbr1}"
-CORES="${6:-2}"
-MEMORY="${7:-1024}"
-SWAP="${8:-512}"
-DISK="${9:-4}"  # in GB
+# Usage: bash alpine.sh
 
 TEMPLATE_DIR="/var/lib/vz/template/cache"
 
