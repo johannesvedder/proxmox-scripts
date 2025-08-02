@@ -13,11 +13,13 @@ if ! command -v bash >/dev/null 2>&1; then
     apt install -y bash
 fi
 
-echo "🔧 Downloading Proxmox Scripts..."
-
 # Check if menu.sh exists, if not clone the repository to /opt/proxmox-scripts
 if [ ! -f "${ROOT_DIR}/menu.sh" ]; then
+    echo "🔧 Downloading Proxmox Scripts..."
     git clone https://github.com/johannesvedder/proxmox-scripts /opt/proxmox-scripts
+    ROOT_DIR="/opt/proxmox-scripts"
+    export ROOT_DIR
+    echo "✅ Proxmox Scripts downloaded to ${ROOT_DIR}"
 else
     echo "menu.sh already exists. Skipping clone."
 fi
