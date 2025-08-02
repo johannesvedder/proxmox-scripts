@@ -1,5 +1,4 @@
 #!/bin/bash
-# Usage: bash main.sh
 
 set -e
 

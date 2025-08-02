@@ -11,6 +11,7 @@ export MEMORY="256"
 export SWAP="128"
 export DISK="1"
 
+# === Run container creation ===
 source "${ROOT_DIR}/proxmox/container.sh"
 
 # Get public IP from Proxmox host interface
@@ -37,4 +38,5 @@ iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 
 iptables-save > /etc/iptables/rules.v4
 
+# === Run container setup ===
 source "${APP_DIR}/container.sh" "${SERVER_PUB_IP}"
