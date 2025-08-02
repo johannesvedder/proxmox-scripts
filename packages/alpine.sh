@@ -5,7 +5,13 @@ TEMPLATE_DIR="/var/lib/vz/template/cache"
 
 # ========== GET LATEST ALPINE TEMPLATE ==========
 echo "🔍 Updating available templates list..." >&2
-pveam update >&2
+LOCKFILE="/tmp/pveam_update_last_run"
+if [ ! -f "$LOCKFILE" ] || [ $(( $(date +%s) - $(stat -c %Y "$LOCKFILE") )) -ge 43200 ]; then
+  pveam update >&2
+  touch "$LOCKFILE"
+else
+  echo "ℹ️  Using cached template list (updated less than 12h ago)." >&2
+fi
 
 echo "🔍 Finding latest Alpine template..." >&2
 TEMPLATE_NAME=$(pveam available --section system | grep "alpine.*amd64" | sort -V | tail -n 1 | awk '{print $2}')
