@@ -11,14 +11,14 @@ echo "Installing WireGuard..."
 apk update
 apk upgrade
 
-apk add iptables
+apk add iptables wireguard-tools qrencode
 
 ## Install correct WireGuard kernel module based on kernel version
 KERNEL_FLAVOR=$(uname -r | grep -oE 'virt|lts' || echo 'virt')
 if [ "$KERNEL_FLAVOR" = "lts" ]; then
-  apk add wireguard-tools wireguard-lts
+  apk add wireguard-lts
 else
-  apk add wireguard-tools wireguard-virt
+  apk add wireguard-virt
 fi
 
 # Create keys directory
@@ -94,3 +94,11 @@ wg-quick up ${INTERFACE}
 
 echo "✅ WireGuard server setup complete!"
 echo "Use the client config file to connect: ~/wireguard-clients/${CLIENT_NAME}.conf"
+
+# Show QR code for mobile clients
+if command -v qrencode &> /dev/null; then
+    echo "📱 Generating QR code for mobile clients..."
+    qrencode -t ansiutf8 < ~/wireguard-clients/${CLIENT_NAME}.conf
+else
+    echo "⚠️ qrencode not found, install it to generate QR codes."
+fi
