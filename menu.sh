@@ -22,7 +22,7 @@ HIDE_CURSOR='\033[?25l'
 SHOW_CURSOR='\033[?25h'
 
 # Global variables
-REPO_DIR="$(dirname "$0")/repository"
+REPO_DIR="${ROOT_DIR:-$(dirname "$0")}/repository"
 current_selection=0
 menu_items=()
 item_types=()
@@ -77,17 +77,43 @@ build_menu() {
             local relative_path="${item#$REPO_DIR/}"
 
             if [[ -d "$item" ]]; then
-                # Directory
-                menu_items+=("${prefix}📁 $basename/")
-                item_types+=("dir")
-                item_paths+=("$relative_path")
+                # Special handling for apps directory
+                if [[ "$relative_path" == "apps" ]]; then
+                    # Show apps directory as expandable
+                    menu_items+=("${prefix}📱 $basename/")
+                    item_types+=("dir")
+                    item_paths+=("$relative_path")
 
-                # If expanded, recursively add contents
-                if is_expanded "$relative_path"; then
-                    build_menu "$item" "$prefix  "
+                    # If expanded, show app folders as executable items
+                    if is_expanded "$relative_path"; then
+                        for app_dir in "$item"/*; do
+                            if [[ -d "$app_dir" && -f "$app_dir/main.sh" ]]; then
+                                local app_name=$(basename "$app_dir")
+                                menu_items+=("${prefix}  🚀 $app_name")
+                                item_types+=("app")
+                                item_paths+=("apps/$app_name")
+                            fi
+                        done
+                    fi
+                # Special handling for apps subdirectories when viewing them directly
+                elif [[ "$relative_path" == apps/* && -f "$item/main.sh" ]]; then
+                    # This is an app directory with main.sh - make it executable
+                    menu_items+=("${prefix}🚀 $basename")
+                    item_types+=("app")
+                    item_paths+=("$relative_path")
+                else
+                    # Regular directory
+                    menu_items+=("${prefix}📁 $basename/")
+                    item_types+=("dir")
+                    item_paths+=("$relative_path")
+
+                    # If expanded, recursively add contents (but skip apps subdirs as they're handled above)
+                    if is_expanded "$relative_path" && [[ "$relative_path" != "apps" ]]; then
+                        build_menu "$item" "$prefix  "
+                    fi
                 fi
             elif [[ -f "$item" && "$basename" == *.sh ]]; then
-                # Executable script
+                # Regular script files (outside of apps)
                 menu_items+=("${prefix}🚀 $basename")
                 item_types+=("script")
                 item_paths+=("$relative_path")
@@ -125,30 +151,56 @@ display_menu() {
     echo -e "${YELLOW}Current selection: ${item_paths[current_selection]:-"N/A"}${NC}"
 }
 
-# Execute selected script
+# Execute selected script or app
 execute_script() {
-    local script_path="$REPO_DIR/${item_paths[current_selection]}"
+    local item_type="${item_types[current_selection]}"
+    local item_path="${item_paths[current_selection]}"
 
-    if [[ -f "$script_path" ]]; then
+    if [[ "$item_type" == "app" ]]; then
+        # Execute app main.sh
+        local app_dir="$REPO_DIR/$item_path"
+        local script_path="$app_dir/main.sh"
+
+        # Export APP_DIR for the app to use
+        export APP_DIR="$app_dir"
+
+        echo -e "\n${GREEN}Executing app: $item_path${NC}"
+        echo -e "${BLUE}App directory: $APP_DIR${NC}"
+        echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+
+        if [[ -f "$script_path" ]]; then
+            # Make script executable if it isn't already
+            chmod +x "$script_path"
+
+            # Execute the app's main.sh
+            bash "$script_path"
+        else
+            echo -e "${RED}Error: main.sh not found in $app_dir${NC}"
+        fi
+    else
+        # Execute regular script
+        local script_path="$REPO_DIR/$item_path"
+
         echo -e "\n${GREEN}Executing: $script_path${NC}"
         echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
 
-        # Make script executable if it isn't already
-        chmod +x "$script_path"
+        if [[ -f "$script_path" ]]; then
+            # Make script executable if it isn't already
+            chmod +x "$script_path"
 
-        # Execute the script
-        bash "$script_path"
-
-        echo ""
-        echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${YELLOW}Script execution completed. Press any key to return to menu...${NC}"
-        read -n 1 -s
-    else
-        echo -e "\n${RED}Error: Script not found: $script_path${NC}"
-        echo -e "${YELLOW}Press any key to continue...${NC}"
-        read -n 1 -s
+            # Execute the script
+            bash "$script_path"
+        else
+            echo -e "${RED}Error: Script not found: $script_path${NC}"
+        fi
     fi
+
+    echo ""
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${YELLOW}Execution completed. Press any key to return to menu...${NC}"
+    read -n 1 -s
 }
 
 # Handle user input
@@ -180,8 +232,8 @@ handle_input() {
                         break
                     fi
                 done
-            elif [[ "${item_types[current_selection]}" == "script" ]]; then
-                # Execute script
+            elif [[ "${item_types[current_selection]}" == "script" || "${item_types[current_selection]}" == "app" ]]; then
+                # Execute script or app
                 execute_script
             fi
             ;;

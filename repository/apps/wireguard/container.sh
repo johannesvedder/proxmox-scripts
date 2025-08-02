@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script sets up a WireGuard VPN server in an Alpine Linux container on Proxmox.
 
 INTERFACE="${1:-wg0}"
 CLIENT_NAME="${2:-client1}"

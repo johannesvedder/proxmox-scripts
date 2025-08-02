@@ -37,4 +37,4 @@ iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 
 iptables-save > /etc/iptables/rules.v4
 
-source "${ROOT_DIR}/apps/install_wireguard_container.sh" "${SERVER_PUB_IP}"
+source "${APP_DIR}/container.sh" "${SERVER_PUB_IP}"
