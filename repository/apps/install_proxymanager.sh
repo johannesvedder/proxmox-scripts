@@ -29,6 +29,7 @@ echo "🚀 Setting up Alpine LXC with Docker and Nginx Proxy Manager..."
 
 echo "📦 Updating Alpine and installing Docker..."
 pct exec $CTID -- apk update
+pct exec $CTID -- apk upgrade
 pct exec $CTID -- apk add --no-cache docker docker-compose curl openrc
 
 echo "🐳 Starting Docker service..."
