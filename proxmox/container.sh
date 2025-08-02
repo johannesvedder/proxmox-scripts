@@ -1,28 +1,14 @@
 #!/bin/bash
-# Usage: bash container.sh [ctid] [template] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
-# ctid: container id (default: auto-generated next available ID)
-# tempalate: name of the template that should be used (default: alpine)
-# hostname: container hostname
-# password: root password (default: changeme)
-# storage: storage pool (default: local-lvm)
-# bridge: network bridge (default: vmbr1)
-# cores: CPU cores (default: 2)
-# memory: RAM in MB (default: 1024)
-# swap: swap in MB (default: 512)
-# disk: disk size in GB (default: 4)
 
 set -e
 
-CTID="${1:-$(pvesh get /cluster/nextid)}"
-TEMPLATE="${2}"
-HOSTNAME="${3}"
-PASSWORD="${4:-changeme}"
-STORAGE="${5:-local-lvm}"
-BRIDGE="${6:-vmbr1}"
-CORES="${7:-2}"
-MEMORY="${8:-1024}"
-SWAP="${9:-512}"
-DISK="${10:-4}"  # in GB
+if [[ -z "$CTID" ]]; then
+  CTID=$(pvesh get /cluster/nextid)
+  if [[ $? -ne 0 || -z "$CTID" ]]; then
+    echo "❌ Failed to retrieve next available CTID"
+    exit 1
+  fi
+fi
 
 # Ensure script is running from the correct location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -93,5 +79,5 @@ else
     echo "⚠️  Could not determine container IP, but container is running" >&2
 fi
 
-# Output the CTID to stdout for capture by calling script
-echo "$CTID"
+export CTID
+echo "Using container CTID: $CTID"

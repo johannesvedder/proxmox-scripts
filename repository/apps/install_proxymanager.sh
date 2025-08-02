@@ -1,61 +1,33 @@
 #!/bin/bash
-# Usage bash install_proxymanager.sh
+# Usage: bash install_proxymanager.sh [ctid] [template] [hostname] [password] [storage] [bridge] [cores] [memory] [swap] [disk]
+# ctid: container id (default: auto-generated next available ID)
+# tempalate: name of the template that should be used (default: alpine)
+# hostname: container hostname
+# password: root password (default: changeme)
+# storage: storage pool (default: local-lvm)
+# bridge: network bridge (default: vmbr1)
+# cores: CPU cores (default: 2)
+# memory: RAM in MB (default: 1024)
+# swap: swap in MB (default: 512)
+# disk: disk size in GB (default: 4)
 
 set -e
 
 # === Defaults ===
-CTID=""
-TEMPLATE="alpine"
-HOSTNAME="nginx-proxy-manager"
-PASSWORD="changeme"
-STORAGE="local-lvm"
-BRIDGE="vmbr1"
-CORES="2"
-MEMORY="1024"
-SWAP="512"
-DISK="4"
+export TEMPLATE="alpine"
+export HOSTNAME="nginx-proxy-manager"
+export CORES="2"
+export MEMORY="1024"
+export SWAP="512"
+export DISK="4"
 
-# === Parse Flags ===
-PARSED=$(getopt -o "" \
-  --long ctid:,template:,hostname:,password:,storage:,bridge:,cores:,memory:,swap:,disk: \
-  -- "$@")
-
-if [[ $? -ne 0 ]]; then
-  echo "❌ Failed to parse arguments."
-  exit 1
-fi
-
-eval set -- "$PARSED"
-
-while true; do
-  case "$1" in
-    --ctid) CTID="$2"; shift 2 ;;
-    --template) TEMPLATE="$2"; shift 2 ;;
-    --hostname) HOSTNAME="$2"; shift 2 ;;
-    --password) PASSWORD="$2"; shift 2 ;;
-    --storage) STORAGE="$2"; shift 2 ;;
-    --bridge) BRIDGE="$2"; shift 2 ;;
-    --cores) CORES="$2"; shift 2 ;;
-    --memory) MEMORY="$2"; shift 2 ;;
-    --swap) SWAP="$2"; shift 2 ;;
-    --disk) DISK="$2"; shift 2 ;;
-    --) shift; break ;;
-    *) echo "❌ Invalid option: $1"; exit 1 ;;
-  esac
-done
+# Source the argparse script to parse command line arguments and override defaults
+source "$(dirname "$0")/helper/argparse.sh"
 
 # === Run container creation ===
-CTID=$(bash "$(dirname "$0")/../../proxmox/container.sh" \
-  "$CTID" \
-  "$TEMPLATE" \
-  "$HOSTNAME" \
-  "$PASSWORD" \
-  "$STORAGE" \
-  "$BRIDGE" \
-  "$CORES" \
-  "$MEMORY" \
-  "$SWAP" \
-  "$DISK")
+source "$(dirname "$0")/../../proxmox/container.sh"
+
+echo "✅ Container $CTID created successfully with template $TEMPLATE."
 
 # Execute setup commands directly inside the container
 echo "🚀 Setting up Alpine LXC with Docker and Nginx Proxy Manager..."
