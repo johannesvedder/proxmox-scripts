@@ -1,17 +1,23 @@
 #!/bin/bash
 # Usage: sudo bash wireguard_setup.sh [interface] [client_name] [client_ip]
 
+set -e
+
+# === Defaults ===
+export TEMPLATE="alpine"
+export HOSTNAME="wireguard-server"
+export CORES="1"
+export MEMORY="256"
+export SWAP="128"
+export DISK="1"
+
 INTERFACE="${1:-wg0}"
 CLIENT_NAME="${2:-client1}"
 CLIENT_IP="${3:-10.0.0.2/24}"
 SERVER_IP="10.0.0.1/24"
 WG_PORT=51820
 
-# Ensure running as root
-if [[ $EUID -ne 0 ]]; then
-   echo "Please run as root or sudo"
-   exit 1
-fi
+source "${ROOT_DIR}/proxmox/container.sh"
 
 # Install WireGuard tools
 echo "Installing WireGuard..."
@@ -37,9 +43,9 @@ SERVER_PUB=$(cat /etc/wireguard/keys/server_public.key)
 CLIENT_PRIV=$(cat /etc/wireguard/keys/${CLIENT_NAME}_private.key)
 CLIENT_PUB=$(cat /etc/wireguard/keys/${CLIENT_NAME}_public.key)
 
-# Get public IP or ask for server public IP
-SERVER_PUB_IP=$(curl -s https://ipinfo.io/ip)
-read -p "Enter server public IP or domain [$SERVER_PUB_IP]: " input
+# Get public IP from Proxmox host interface
+SERVER_PUB_IP=$(ip route get 1.1.1.1 | awk '{print $7; exit}')
+read -rp "Enter server public IP or domain [$SERVER_PUB_IP]: " input
 SERVER_PUB_IP=${input:-$SERVER_PUB_IP}
 
 # Create server config
