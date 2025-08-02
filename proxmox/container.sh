@@ -2,13 +2,25 @@
 
 set -e
 
+# Set and export defaults if not provided
 if [[ -z "$CTID" ]]; then
   CTID=$(pvesh get /cluster/nextid)
+  export CTID
   if [[ $? -ne 0 || -z "$CTID" ]]; then
     echo "❌ Failed to retrieve next available CTID"
     exit 1
   fi
 fi
+
+export TEMPLATE="${TEMPLATE:-alpine}"
+export HOSTNAME="${HOSTNAME:-alpine-ct}"
+export PASSWORD="${PASSWORD:-changeme}"
+export STORAGE="${STORAGE:-local-lvm}"
+export BRIDGE="${BRIDGE:-vmbr1}"
+export CORES="${CORES:-2}"
+export MEMORY="${MEMORY:-1024}"
+export SWAP="${SWAP:-512}"
+export DISK="${DISK:-4}"
 
 # ========= Get Template =========
 if [[ "$TEMPLATE" == "alpine" ]]; then
@@ -44,8 +56,6 @@ CMD+=(
   --onboot 1
   --start 1
 )
-
-
 
 echo "Running command to create container:"
 printf '  %q ' "${CMD[@]}"
