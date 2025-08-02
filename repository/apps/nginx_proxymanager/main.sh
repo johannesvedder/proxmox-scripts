@@ -14,4 +14,4 @@ export DISK="4"
 source "${ROOT_DIR}/proxmox/container.sh"
 
 # === Run container setup ===
-source "${APP_DIR}/container.sh"
+pct exec "$CTID" -- bash -c "source '${APP_DIR}'/container.sh"
