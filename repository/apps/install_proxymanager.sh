@@ -3,7 +3,7 @@
 # ctid: container id (default: auto-generated next available ID)
 # tempalate: name of the template that should be used (default: alpine)
 # hostname: container hostname
-# password: root password (default: changeme)
+# password: root password
 # storage: storage pool (default: local-lvm)
 # bridge: network bridge (default: vmbr1)
 # cores: CPU cores (default: 2)

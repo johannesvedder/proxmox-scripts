@@ -28,12 +28,12 @@ echo "📦 Creating container CTID $CTID with template $TEMPLATE_PATH..."
 
 CMD=(pct create "$CTID" "$TEMPLATE_PATH")
 
-# Optional: Add --hostname only if HOSTNAME is set
+# Optional flags: Add only if not set
 [[ -n "$HOSTNAME" ]] && CMD+=(--hostname "$HOSTNAME")
+[[ -n "$PASSWORD" ]] && CMD+=(--password "$PASSWORD")
 
-# Required and optional flags
+# Required flags
 CMD+=(
-  --password "$PASSWORD"
   --cores "$CORES"
   --memory "$MEMORY"
   --swap "$SWAP"
@@ -45,7 +45,11 @@ CMD+=(
   --start 1
 )
 
-# Run the command
+
+
+echo "Running command to create container:"
+printf '  %q ' "${CMD[@]}"
+
 "${CMD[@]}"
 
 if [[ $? -ne 0 ]]; then
