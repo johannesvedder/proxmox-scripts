@@ -10,12 +10,9 @@ if [[ -z "$CTID" ]]; then
   fi
 fi
 
-# Ensure script is running from the correct location
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 # ========= Get Template =========
 if [[ "$TEMPLATE" == "alpine" ]]; then
-  TEMPLATE_PATH=$("$SCRIPT_DIR/../packages/alpine.sh")
+  TEMPLATE_PATH=$("${ROOT_DIR}/packages/alpine.sh")
 else
   echo "❌ Unsupported template: $TEMPLATE"
   exit 1
