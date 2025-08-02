@@ -22,7 +22,7 @@ HIDE_CURSOR='\033[?25l'
 SHOW_CURSOR='\033[?25h'
 
 # Global variables
-ROOT_DIR="$(dirname "$0")/repository"
+REPO_DIR="$(dirname "$0")/repository"
 current_selection=0
 menu_items=()
 item_types=()
@@ -65,8 +65,8 @@ toggle_expansion() {
 build_menu() {
     local base_dir="$1"
     local prefix="$2"
-    local current_dir="${base_dir#$ROOT_DIR/}"
-    [[ "$current_dir" == "$ROOT_DIR" ]] && current_dir=""
+    local current_dir="${base_dir#$REPO_DIR/}"
+    [[ "$current_dir" == "$REPO_DIR" ]] && current_dir=""
 
     # Add current directory items
     if [[ -d "$base_dir" ]]; then
@@ -74,7 +74,7 @@ build_menu() {
             [[ ! -e "$item" ]] && continue
 
             local basename=$(basename "$item")
-            local relative_path="${item#$ROOT_DIR/}"
+            local relative_path="${item#$REPO_DIR/}"
 
             if [[ -d "$item" ]]; then
                 # Directory
@@ -101,7 +101,7 @@ refresh_menu() {
     menu_items=()
     item_types=()
     item_paths=()
-    build_menu "$ROOT_DIR" ""
+    build_menu "$REPO_DIR" ""
 }
 
 # Display menu
@@ -127,7 +127,7 @@ display_menu() {
 
 # Execute selected script
 execute_script() {
-    local script_path="$ROOT_DIR/${item_paths[current_selection]}"
+    local script_path="$REPO_DIR/${item_paths[current_selection]}"
 
     if [[ -f "$script_path" ]]; then
         echo -e "\n${GREEN}Executing: $script_path${NC}"
@@ -209,8 +209,8 @@ cleanup() {
 # Main function
 main() {
     # Check if repository directory exists
-    if [[ ! -d "$ROOT_DIR" ]]; then
-        echo -e "${RED}Error: Repository directory '$ROOT_DIR' not found!${NC}"
+    if [[ ! -d "$REPO_DIR" ]]; then
+        echo -e "${RED}Error: Repository directory '$REPO_DIR' not found!${NC}"
         echo -e "${YELLOW}Please make sure you're running this script from the correct directory.${NC}"
         exit 1
     fi
