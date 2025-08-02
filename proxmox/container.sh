@@ -13,8 +13,8 @@ if [[ -z "$CTID" ]]; then
 fi
 
 export TEMPLATE="${TEMPLATE:-alpine}"
-export HOSTNAME="${HOSTNAME:-alpine-ct}"
-export PASSWORD="${PASSWORD:-changeme}"
+# export HOSTNAME="${HOSTNAME:-alpine-ct}"
+# export PASSWORD="${PASSWORD:-changeme}"
 export STORAGE="${STORAGE:-local-lvm}"
 export BRIDGE="${BRIDGE:-vmbr1}"
 export CORES="${CORES:-2}"
