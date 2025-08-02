@@ -16,7 +16,7 @@ fi
 echo "🔧 Downloading Proxmox Scripts..."
 
 # Check if menu.sh exists, if not clone the repository to /opt/proxmox-scripts
-if [ -f "${ROOT_DIR}/menu.sh" ]; then
+if [ ! -f "${ROOT_DIR}/menu.sh" ]; then
     git clone https://github.com/johannesvedder/proxmox-scripts /opt/proxmox-scripts
 else
     echo "menu.sh already exists. Skipping clone."
