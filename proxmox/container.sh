@@ -2,6 +2,9 @@
 
 set -e
 
+# Source the argparse script to parse command line arguments and override defaults
+source "${ROOT_DIR}/helper/argparse.sh"
+
 # Set and export defaults if not provided
 if [[ -z "$CTID" ]]; then
   CTID=$(pvesh get /cluster/nextid)
@@ -91,4 +94,5 @@ else
 fi
 
 export CTID
-echo "Using container CTID: $CTID"
+
+echo "✅ Container $CTID created successfully with template $TEMPLATE."

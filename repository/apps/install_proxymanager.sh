@@ -21,13 +21,8 @@ export MEMORY="1024"
 export SWAP="512"
 export DISK="4"
 
-# Source the argparse script to parse command line arguments and override defaults
-source "${ROOT_DIR}/helper/argparse.sh"
-
 # === Run container creation ===
 source "${ROOT_DIR}/proxmox/container.sh"
-
-echo "✅ Container $CTID created successfully with template $TEMPLATE."
 
 # Execute setup commands directly inside the container
 echo "🚀 Setting up Alpine LXC with Docker and Nginx Proxy Manager..."
