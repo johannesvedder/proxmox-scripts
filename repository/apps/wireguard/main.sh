@@ -39,4 +39,6 @@ iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 iptables-save > /etc/iptables/rules.v4
 
 # === Run container setup ===
-pct exec "$CTID" -- sh -c ". '${APP_DIR}'/container.sh '${SERVER_PUB_IP}'"
+pct push "$CTID" "${APP_DIR}/container.sh" /root/container.sh
+pct exec "$CTID" -- sh -c ". /root/container.sh '${SERVER_PUB_IP}'"
+pct exec "$CTID" -- rm -f /root/container.sh
