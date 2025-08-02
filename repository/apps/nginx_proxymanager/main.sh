@@ -11,7 +11,8 @@ export SWAP="512"
 export DISK="4"
 
 # === Run container creation ===
-source "${ROOT_DIR}/proxmox/container.sh"
+source "${ROOT_DIR}/proxmox/utils.sh"
+create_container
 
 # === Run container setup ===
-pct exec "$CTID" -- sh -c ". '${APP_DIR}'/container.sh"
+run_app_container

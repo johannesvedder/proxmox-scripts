@@ -12,7 +12,8 @@ export SWAP="128"
 export DISK="1"
 
 # === Run container creation ===
-source "${ROOT_DIR}/proxmox/container.sh"
+source "${ROOT_DIR}/proxmox/utils.sh"
+create_container
 
 # Get public IP from Proxmox host interface
 SERVER_PUB_IP=$(ip route get 1.1.1.1 | awk '{print $7; exit}')
@@ -39,6 +40,4 @@ iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 iptables-save > /etc/iptables/rules.v4
 
 # === Run container setup ===
-pct push "$CTID" "${APP_DIR}/container.sh" /root/container.sh
-pct exec "$CTID" -- sh -c ". /root/container.sh '${SERVER_PUB_IP}'"
-pct exec "$CTID" -- rm -f /root/container.sh
+run_app_container "$SERVER_PUB_IP"
