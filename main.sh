@@ -1,6 +1,9 @@
 #!/bin/bash
 # Usage: bash -c "$(curl -fsSL https://raw.githubusercontent.com/johannesvedder/proxmox-scripts/refs/heads/main/main.sh)"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export SCRIPT_DIR
+
 if ! command -v git >/dev/null 2>&1; then
     apt update
     apt install -y git

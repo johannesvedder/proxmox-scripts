@@ -22,10 +22,10 @@ export SWAP="512"
 export DISK="4"
 
 # Source the argparse script to parse command line arguments and override defaults
-source "$(dirname "$0")/helper/argparse.sh"
+source "$(SCRIPT_DIR)/helper/argparse.sh"
 
 # === Run container creation ===
-source "$(dirname "$0")/../../proxmox/container.sh"
+source "$(SCRIPT_DIR)/proxmox/container.sh"
 
 echo "✅ Container $CTID created successfully with template $TEMPLATE."
 
