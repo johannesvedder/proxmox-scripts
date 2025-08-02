@@ -18,7 +18,10 @@ create_container () {
 
   export TEMPLATE="${TEMPLATE:-alpine}"
   # export HOSTNAME="${HOSTNAME:-alpine-ct}"
+
+  # TODO if commented out it should be asked interactively
   # export PASSWORD="${PASSWORD:-changeme}"
+
   export STORAGE="${STORAGE:-local-lvm}"
   export BRIDGE="${BRIDGE:-vmbr1}"
   export CORES="${CORES:-2}"
@@ -47,6 +50,8 @@ create_container () {
   # Optional flags: Add only if not set
   [[ -n "$HOSTNAME" ]] && CMD+=(--hostname "$HOSTNAME")
   [[ -n "$PASSWORD" ]] && CMD+=(--password "$PASSWORD")
+
+  echo "PASSWORD: $PASSWORD"
 
   # Required flags
   CMD+=(
