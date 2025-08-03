@@ -51,8 +51,6 @@ create_container () {
   [[ -n "$HOSTNAME" ]] && CMD+=(--hostname "$HOSTNAME")
   [[ -n "$PASSWORD" ]] && CMD+=(--password "$PASSWORD")
 
-  echo "PASSWORD: $PASSWORD"
-
   # Required flags
   CMD+=(
     --cores "$CORES"
