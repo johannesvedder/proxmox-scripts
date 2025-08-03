@@ -71,11 +71,11 @@ sysctl -w net.ipv6.conf.all.forwarding=1
 # Setup iptables rules (IPv4 + IPv6) with persistence
 iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
 iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
-iptables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
 ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
-ip6tables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 # Save iptables rules for persistence
 mkdir -p /etc/iptables
@@ -103,17 +103,17 @@ SaveConfig = true
 PostUp = sysctl -w net.ipv4.ip_forward=1; sysctl -w net.ipv6.conf.all.forwarding=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT
 PostUp = iptables -A FORWARD -o %i -j ACCEPT
-PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 PostUp = ip6tables -A FORWARD -i %i -j ACCEPT
 PostUp = ip6tables -A FORWARD -o %i -j ACCEPT
-PostUp = ip6tables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostUp = ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 PostDown = iptables -D FORWARD -i %i -j ACCEPT
 PostDown = iptables -D FORWARD -o %i -j ACCEPT
-PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 PostDown = ip6tables -D FORWARD -i %i -j ACCEPT
 PostDown = ip6tables -D FORWARD -o %i -j ACCEPT
-PostDown = ip6tables -t nat -D POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostDown = ip6tables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 # Client peer
 [Peer]
