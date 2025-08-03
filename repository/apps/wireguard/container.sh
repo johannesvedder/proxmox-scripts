@@ -9,9 +9,10 @@ WG_PORT=51820
 
 echo "Installing WireGuard..."
 
-ALPINE_VERSION=$(awk -F= '/^VERSION_ID/{print $2}' /etc/os-release | tr -d '"')
-echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories
+#ALPINE_VERSION=$(awk -F= '/^VERSION_ID/{print $2}' /etc/os-release | tr -d '"')
+#echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories
 
+setup-apkrepos -cf
 apk update
 apk upgrade
 
