@@ -41,4 +41,4 @@ iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 iptables-save > /etc/iptables/rules.v4
 
 # === Run container setup ===
-run_app_container
+run_app_container "$SERVER_PUB_IP"

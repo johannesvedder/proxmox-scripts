@@ -1,11 +1,18 @@
 #!/bin/bash
 # This script sets up a WireGuard VPN server in an Alpine Linux container on Proxmox.
 
-INTERFACE="${1:-wg0}"
-CLIENT_NAME="${2:-client1}"
-CLIENT_IP="${3:-10.0.0.2/24}"
+SERVER_PUB_IP="${1}"
+INTERFACE="${2:-wg0}"
+CLIENT_NAME="${3:-client1}"
+CLIENT_IP="${4:-10.0.0.2/32}"
 SERVER_IP="10.0.0.1/24"
 WG_PORT=51820
+
+# check if SERVER_PUB_IP is provided
+if [ -z "$SERVER_PUB_IP" ]; then
+    echo "Usage: $0 <server_public_ip> [interface] [client_name] [client_ip]"
+    echo "Example: $0"
+fi
 
 echo "Installing WireGuard..."
 
@@ -24,6 +31,9 @@ apk add iptables wireguard-tools libqrencode-tools
 # Create keys directory
 mkdir -p /etc/wireguard/keys
 chmod 700 /etc/wireguard/keys
+
+# Use restrictive file permissions when generating keys
+umask 077
 
 # Generate server keys if not exist
 if [ ! -f /etc/wireguard/keys/server_private.key ]; then
@@ -52,6 +62,35 @@ echo "Server public key: $SERVER_PUB"
 MAIN_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
 echo "Detected main interface: $MAIN_INTERFACE"
 
+# Enable IP forwarding permanently (IPv4 + IPv6)
+grep -qxF 'net.ipv4.ip_forward = 1' /etc/sysctl.conf || echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
+grep -qxF 'net.ipv6.conf.all.forwarding = 1' /etc/sysctl.conf || echo 'net.ipv6.conf.all.forwarding = 1' >> /etc/sysctl.conf
+sysctl -w net.ipv4.ip_forward=1
+sysctl -w net.ipv6.conf.all.forwarding=1
+
+# Setup iptables rules (IPv4 + IPv6) with persistence
+iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
+iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
+iptables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+
+ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
+ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
+ip6tables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+
+# Save iptables rules for persistence
+mkdir -p /etc/iptables
+iptables-save > /etc/iptables/iptables.rules
+ip6tables-save > /etc/iptables/ip6tables.rules
+
+# Create restore scripts for boot
+cat > /etc/local.d/iptables.start <<EOF
+#!/bin/sh
+iptables-restore < /etc/iptables/iptables.rules
+ip6tables-restore < /etc/iptables/ip6tables.rules
+EOF
+chmod +x /etc/local.d/iptables.start
+rc-update add local default
+
 # Create server config
 cat > /etc/wireguard/${INTERFACE}.conf <<EOF
 [Interface]
@@ -61,13 +100,20 @@ PrivateKey = ${SERVER_PRIV}
 SaveConfig = true
 
 # Enable IP forwarding and NAT
-PostUp = sysctl -w net.ipv4.ip_forward=1
+PostUp = sysctl -w net.ipv4.ip_forward=1; sysctl -w net.ipv6.conf.all.forwarding=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT
 PostUp = iptables -A FORWARD -o %i -j ACCEPT
-PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostUp = ip6tables -A FORWARD -i %i -j ACCEPT
+PostUp = ip6tables -A FORWARD -o %i -j ACCEPT
+PostUp = ip6tables -t nat -A POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+
 PostDown = iptables -D FORWARD -i %i -j ACCEPT
 PostDown = iptables -D FORWARD -o %i -j ACCEPT
-PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_IF} -j MASQUERADE
+PostDown = ip6tables -D FORWARD -i %i -j ACCEPT
+PostDown = ip6tables -D FORWARD -o %i -j ACCEPT
+PostDown = ip6tables -t nat -D POSTROUTING -o ${MAIN_IF} -j MASQUERADE
 
 # Client peer
 [Peer]
@@ -79,6 +125,8 @@ chmod 600 /etc/wireguard/${INTERFACE}.conf
 
 # Create client config
 mkdir -p ~/wireguard-clients
+chmod 700 ~/wireguard-clients
+
 cat > ~/wireguard-clients/${CLIENT_NAME}.conf <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIV}
@@ -92,17 +140,19 @@ AllowedIPs = 0.0.0.0/0, ::/0
 PersistentKeepalive = 25
 EOF
 
+chmod 600 ~/wireguard-clients/${CLIENT_NAME}.conf
+
 echo "🔑 Client config created at ~/wireguard-clients/${CLIENT_NAME}.conf"
 
 # Enable IP forwarding permanently
-echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
+# echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf
 
 # Create iptables rules directory if it doesn't exist
-mkdir -p /etc/iptables
+#mkdir -p /etc/iptables
 
 # Enable OpenRC services for persistence
-rc-update add iptables
-rc-update add ip6tables
+#rc-update add iptables
+#rc-update add ip6tables
 
 # Start WireGuard
 echo "Starting WireGuard interface ${INTERFACE}..."
