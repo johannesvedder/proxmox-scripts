@@ -17,8 +17,9 @@ create_container
 
 # Get public IP from Proxmox host interface
 SERVER_PUB_IP=$(ip route get 1.1.1.1 | awk '{print $7; exit}')
-read -rp "Enter server public IP or domain [$SERVER_PUB_IP]: " input
-SERVER_PUB_IP=${input:-$SERVER_PUB_IP}
+# todo enable
+#read -rp "Enter server public IP or domain [$SERVER_PUB_IP]: " input
+#SERVER_PUB_IP=${input:-$SERVER_PUB_IP}
 
 # Enable IP forwarding
 echo "Enabling IP forwarding..."
