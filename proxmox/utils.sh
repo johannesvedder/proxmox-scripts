@@ -67,7 +67,7 @@ create_container () {
   # echo "Running command to create container:"
   # printf '  %q ' "${CMD[@]}"
 
-  "${CMD[@]}" >/dev/null
+  "${CMD[@]}" # >/dev/null
 
   if [[ $? -ne 0 ]]; then
       echo "❌ Failed to create container $CTID"
