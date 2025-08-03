@@ -9,10 +9,14 @@ WG_PORT=51820
 
 echo "Installing WireGuard..."
 
-#ALPINE_VERSION=$(awk -F= '/^VERSION_ID/{print $2}' /etc/os-release | tr -d '"')
-#echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories
+#setup-apkrepos -cf
 
-setup-apkrepos -cf
+echo "Setting up repositories..."
+cat > /etc/apk/repositories << EOF
+https://dl-cdn.alpinelinux.org/alpine/v$(cat /etc/alpine-release | cut -d'.' -f1,2)/main
+https://dl-cdn.alpinelinux.org/alpine/v$(cat /etc/alpine-release | cut -d'.' -f1,2)/community
+EOF
+
 apk update
 apk upgrade
 
@@ -44,7 +48,6 @@ SERVER_PRIV=$(cat /etc/wireguard/keys/server_private.key)
 SERVER_PUB=$(cat /etc/wireguard/keys/server_public.key)
 CLIENT_PRIV=$(cat /etc/wireguard/keys/${CLIENT_NAME}_private.key)
 CLIENT_PUB=$(cat /etc/wireguard/keys/${CLIENT_NAME}_public.key)
-
 
 # Create server config
 cat > /etc/wireguard/${INTERFACE}.conf <<EOF
