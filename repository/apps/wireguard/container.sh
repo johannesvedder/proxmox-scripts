@@ -20,7 +20,7 @@ EOF
 apk update
 apk upgrade
 
-apk add iptables wireguard-tools qrencode
+apk add iptables wireguard-tools libqrencode-tools
 
 ## Install correct WireGuard kernel module based on kernel version
 KERNEL_FLAVOR=$(uname -r | grep -oE 'virt|lts' || echo 'virt')
