@@ -69,18 +69,18 @@ sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv6.conf.all.forwarding=1
 
 # Setup iptables rules (IPv4 + IPv6) with persistence
-iptables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
-iptables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
-iptables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#iptables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
+#iptables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
+#iptables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
-ip6tables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
-ip6tables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
-ip6tables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#ip6tables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
+#ip6tables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
+#ip6tables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 # Save iptables rules for persistence
-mkdir -p /etc/iptables
-iptables-save > /etc/iptables/iptables.rules
-ip6tables-save > /etc/iptables/ip6tables.rules
+#mkdir -p /etc/iptables
+#iptables-save > /etc/iptables/iptables.rules
+#ip6tables-save > /etc/iptables/ip6tables.rules
 
 # Create restore scripts for boot
 cat > /etc/local.d/iptables.start <<EOF
@@ -100,20 +100,20 @@ PrivateKey = ${SERVER_PRIV}
 SaveConfig = true
 
 # Enable IP forwarding and NAT
-PostUp = sysctl -w net.ipv4.ip_forward=1; sysctl -w net.ipv6.conf.all.forwarding=1
-PostUp = iptables -A FORWARD -i %i -j ACCEPT
-PostUp = iptables -A FORWARD -o %i -j ACCEPT
-PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
-PostUp = ip6tables -A FORWARD -i %i -j ACCEPT
-PostUp = ip6tables -A FORWARD -o %i -j ACCEPT
-PostUp = ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#PostUp = sysctl -w net.ipv4.ip_forward=1; sysctl -w net.ipv6.conf.all.forwarding=1
+#PostUp = iptables -A FORWARD -i %i -j ACCEPT
+#PostUp = iptables -A FORWARD -o %i -j ACCEPT
+#PostUp = iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#PostUp = ip6tables -A FORWARD -i %i -j ACCEPT
+#PostUp = ip6tables -A FORWARD -o %i -j ACCEPT
+#PostUp = ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
-PostDown = iptables -D FORWARD -i %i -j ACCEPT
-PostDown = iptables -D FORWARD -o %i -j ACCEPT
-PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
-PostDown = ip6tables -D FORWARD -i %i -j ACCEPT
-PostDown = ip6tables -D FORWARD -o %i -j ACCEPT
-PostDown = ip6tables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#PostDown = iptables -D FORWARD -i %i -j ACCEPT
+#PostDown = iptables -D FORWARD -o %i -j ACCEPT
+#PostDown = iptables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+#PostDown = ip6tables -D FORWARD -i %i -j ACCEPT
+#PostDown = ip6tables -D FORWARD -o %i -j ACCEPT
+#PostDown = ip6tables -t nat -D POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 # Client peer
 [Peer]

@@ -31,23 +31,19 @@ echo "Setting up firewall rules..."
 
 # todo make this configurable
 # IPv4: Allow forwarding from bridge to external (vmbr0)
-iptables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
-iptables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+#iptables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
+#iptables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # IPv4: Enable NAT for 192.168.100.0/24 subnet going out vmbr0
-iptables -t nat -C POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
+#iptables -t nat -C POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 
 # IPv6: Allow forwarding (adjust IPv6 bridge subnet as needed)
-ip6tables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
-ip6tables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-# IPv6: Enable NAT/MASQUERADE if using NAT66 (optional, not common unless behind NAT66 router)
-# Replace with your real IPv6 subnet if NAT66 is in use
-#ip6tables -t nat -C POSTROUTING -s fd00::/64 -o vmbr0 -j MASQUERADE 2>/dev/null || ip6tables -t nat -A POSTROUTING -s fd00::/64 -o vmbr0 -j MASQUERADE
+#ip6tables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
+#ip6tables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Save rules
-iptables-save > /etc/iptables/rules.v4
-ip6tables-save > /etc/iptables/rules.v6
+#iptables-save > /etc/iptables/rules.v4
+#ip6tables-save > /etc/iptables/rules.v6
 
 # === Run container setup ===
 run_app_container "$SERVER_PUB_IP"
