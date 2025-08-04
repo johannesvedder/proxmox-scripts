@@ -174,7 +174,7 @@ execute_script() {
             chmod +x "$script_path"
 
             # Execute the app's main.sh
-            source "$script_path"
+            bash "$script_path"
         else
             echo -e "${RED}Error: main.sh not found in $app_dir${NC}"
         fi
@@ -191,7 +191,7 @@ execute_script() {
             chmod +x "$script_path"
 
             # Execute the script
-            source "$script_path"
+            bash "$script_path"
         else
             echo -e "${RED}Error: Script not found: $script_path${NC}"
         fi
