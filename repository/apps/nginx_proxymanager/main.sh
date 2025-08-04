@@ -11,7 +11,6 @@ export SWAP="512"
 export DISK="4"
 
 # === Run container creation ===
-source "${ROOT_DIR}/proxmox/utils.sh"
 create_container
 
 # === Run container setup ===

@@ -15,7 +15,6 @@ export SWAP="128"
 export DISK="1"
 
 # === Run container creation ===
-source "${ROOT_DIR}/proxmox/utils.sh"
 create_container
 
 # Get public IP from Proxmox host interface

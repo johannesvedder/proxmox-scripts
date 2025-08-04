@@ -23,6 +23,7 @@ else
 fi
 
 source "${ROOT_DIR}/helper/utils.sh"
+source "${ROOT_DIR}/proxmox/container_tasks.sh"
 
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
