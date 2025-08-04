@@ -18,8 +18,6 @@ create_container () {
 
   export TEMPLATE="${TEMPLATE:-alpine}"
   # export HOSTNAME="${HOSTNAME:-alpine-ct}"
-
-  # TODO aks for password interactively
   # export PASSWORD="${PASSWORD:-changeme}"
   export STORAGE="${STORAGE:-local-lvm}"
   export BRIDGE="${BRIDGE:-vmbr1}"
@@ -52,6 +50,7 @@ create_container () {
 
   # Required flags
   CMD+=(
+    # Asks for password interactively
     --password
     --cores "$CORES"
     --memory "$MEMORY"

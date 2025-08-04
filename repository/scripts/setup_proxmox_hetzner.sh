@@ -1,20 +1,15 @@
 #!/bin/bash
-# Usage: bash setup_proxmox_hetzner.sh [dhcp_enabled]
-# dhcp_enabled: true or false (default: true)
-# Run: bash -c "$(curl -fsSL <RAW_URL>)"
+# Configures Proxmox for Hetzner Cloud with NAT and DHCP
 
-DHCP_ENABLED=${1:-true}
-
-INTERNAL_BRIDGE="vmbr1"
-INTERNAL_SUBNET="192.168.100.0/24"
-INTERNAL_NETMASK="255.255.255.0"
-INTERNAL_IP="192.168.100.1"
-DHCP_RANGE_START="192.168.100.100"
-DHCP_RANGE_END="192.168.100.200"
-
-PUBLIC_BRIDGE="vmbr0"
-PUBLIC_IP=$(ip -4 addr show dev $PUBLIC_BRIDGE | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -1)
-GATEWAY=$(ip route | grep default | awk '{print $3}' | head -1)
+# Use config or defaults
+DHCP_ENABLED="${DHCP_ENABLED:-true}"
+INTERNAL_BRIDGE="${INTERNAL_BRIDGE:-vmbr1}" # LAN
+INTERNAL_SUBNET="${INTERNAL_SUBNET:-192.168.100.0/24}"
+INTERNAL_NETMASK="${INTERNAL_NETMASK:-255.255.255.0}"
+INTERNAL_IP="${INTERNAL_IP:-192.168.100.1}"
+DHCP_RANGE_START="${DHCP_RANGE_START:-192.168.100.100}"
+DHCP_RANGE_END="${DHCP_RANGE_END:-192.168.100.200}"
+PUBLIC_BRIDGE="${PUBLIC_BRIDGE:-vmbr0}" # WAN
 
 echo "DHCP enabled: $DHCP_ENABLED"
 echo "Public bridge: $PUBLIC_BRIDGE, IP: $PUBLIC_IP, Gateway: $GATEWAY"
@@ -47,10 +42,8 @@ echo "Enabling IP forwarding..."
 sysctl -w net.ipv4.ip_forward=1
 grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf || echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
 
-# 3. Setup NAT on public bridge
+# 3. # Add the MASQUERADE rule if not already present
 echo "Configuring NAT MASQUERADE on $PUBLIC_BRIDGE for $INTERNAL_SUBNET"
-
-# Add the MASQUERADE rule if not already present
 if ! iptables -t nat -C POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE 2>/dev/null; then
   iptables -t nat -A POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE
 fi
@@ -113,6 +106,16 @@ EOF
 else
   echo "DHCP server installation skipped."
 fi
+
+# Updating config file
+update_config "INTERNAL_BRIDGE" "$INTERNAL_BRIDGE"
+update_config "INTERNAL_SUBNET" "$INTERNAL_SUBNET"
+update_config "INTERNAL_NETMASK" "$INTERNAL_NETMASK"
+update_config "INTERNAL_IP" "$INTERNAL_IP"
+update_config "DHCP_ENABLED" "$DHCP_ENABLED"
+update_config "DHCP_RANGE_START" "$DHCP_RANGE_START"
+update_config "DHCP_RANGE_END" "$DHCP_RANGE_END"
+update_config "PUBLIC_BRIDGE" "$PUBLIC_BRIDGE"
 
 echo ""
 echo "=== Setup Complete! ==="
