@@ -21,6 +21,7 @@ if [ ! -f "${ROOT_DIR}/menu.sh" ]; then
 else
     echo "menu.sh already exists. Skipping clone."
 fi
+export ROOT_DIR
 
 source "${ROOT_DIR}/helper/utils.sh"
 source "${ROOT_DIR}/proxmox/container_tasks.sh"
