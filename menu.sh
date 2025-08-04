@@ -103,7 +103,8 @@ build_menu() {
                     item_paths+=("$relative_path")
                 else
                     # Regular directory
-                    menu_items+=("${prefix}📁 $basename/")
+                    # todo use this for regular dirs: 📁 and 🗂️ for scripts
+                    menu_items+=("${prefix}🗂️ $basename/")
                     item_types+=("dir")
                     item_paths+=("$relative_path")
 
