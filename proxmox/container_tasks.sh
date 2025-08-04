@@ -97,6 +97,7 @@ create_container () {
   fi
 
   export CTID
+  export CONTAINER_IP
 
   echo "✅ Container $CTID created successfully with template $TEMPLATE."
 }

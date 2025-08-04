@@ -9,7 +9,6 @@ INTERNAL_BRIDGE="${INTERNAL_BRIDGE:-vmbr1}" # LAN
 
 # WireGuard server configuration
 WG_PORT="${WG_PORT:-51820}"
-CONTAINER_IP=$(pct exec 102 -- ip -4 addr show dev eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -1)
 
 # === Defaults ===
 export TEMPLATE="alpine"
