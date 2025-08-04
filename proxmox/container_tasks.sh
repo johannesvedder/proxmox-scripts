@@ -100,6 +100,7 @@ create_container () {
 
   echo "✅ Container $CTID created successfully with template $TEMPLATE."
 }
+export -f create_container
 
 run_app_container () {
   if [[ -z "$CTID" ]]; then
@@ -112,3 +113,4 @@ run_app_container () {
   pct exec "$CTID" -- sh -c ". /root/container.sh $*"
   pct exec "$CTID" -- rm -f /root/container.sh
 }
+export -f run_app_container
