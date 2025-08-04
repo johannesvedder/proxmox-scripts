@@ -1,18 +1,11 @@
 #!/bin/bash
 # This script sets up a WireGuard VPN server in an Alpine Linux container on Proxmox.
 
-SERVER_PUB_IP="${1}"
 INTERFACE="${2:-wg0}"
 CLIENT_NAME="${3:-client1}"
 CLIENT_IP="${4:-10.0.0.2/32}"
 SERVER_IP="10.0.0.1/24"
 WG_PORT=51820
-
-# check if SERVER_PUB_IP is provided
-if [ -z "$SERVER_PUB_IP" ]; then
-    echo "Usage: $0 <server_public_ip> [interface] [client_name] [client_ip]"
-    echo "Example: $0"
-fi
 
 echo "Installing WireGuard..."
 
@@ -90,7 +83,7 @@ DNS = 1.1.1.1, 8.8.8.8
 
 [Peer]
 PublicKey = ${SERVER_PUB}
-Endpoint = ${SERVER_PUB_IP}:${WG_PORT}
+Endpoint = ${PUBLIC_IP}:${WG_PORT}
 AllowedIPs = 0.0.0.0/0, ::/0
 PersistentKeepalive = 25
 EOF
@@ -127,7 +120,7 @@ echo "   - Interface: ${INTERFACE}"
 echo "   - Server IP: ${SERVER_IP}"
 echo "   - Client IP: ${CLIENT_IP}"
 echo "   - Port: ${WG_PORT}"
-echo "   - Public endpoint: ${SERVER_PUB_IP}:${WG_PORT}"
+echo "   - Public endpoint: ${PUBLIC_IP}:${WG_PORT}"
 echo ""
 echo "📁 Client config: ~/wireguard-clients/${CLIENT_NAME}.conf"
 

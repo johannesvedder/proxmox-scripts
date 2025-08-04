@@ -1,10 +1,5 @@
 #!/bin/bash
 
-PUBLIC_IP=$(ip -4 addr show dev $PUBLIC_BRIDGE | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -1)
-export PUBLIC_IP
-GATEWAY=$(ip route | grep default | awk '{print $3}' | head -1)
-export GATEWAY
-
 # Create config file in $ROOT_DIR
 CONFIG_FILE="$ROOT_DIR/config.sh"
 export CONFIG_FILE
@@ -19,6 +14,12 @@ else
   set +a
   echo "Config file loaded from $CONFIG_FILE"
 fi
+
+# PUBLIC_IP=$(ip -4 addr show dev $PUBLIC_BRIDGE | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -1)
+PUBLIC_IP=$(ip route get 1.1.1.1 | awk '{print $7; exit}')
+export PUBLIC_IP
+GATEWAY=$(ip route | grep default | awk '{print $3}' | head -1)
+export GATEWAY
 
 update_config() {
   local key="$1"
