@@ -50,11 +50,10 @@ grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf || echo "net.ipv4.ip_forward=1
 # 3. Setup NAT on public bridge
 echo "Configuring NAT MASQUERADE on $PUBLIC_BRIDGE for $INTERNAL_SUBNET"
 
-# Remove existing rule if it exists (ignore errors)
-iptables -t nat -D POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE 2>/dev/null || true
-
-# Add the MASQUERADE rule
-iptables -t nat -A POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE
+# Add the MASQUERADE rule if not already present
+if ! iptables -t nat -C POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE 2>/dev/null; then
+  iptables -t nat -A POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE
+fi
 
 # Verify the rule was added
 echo "Current NAT rules:"

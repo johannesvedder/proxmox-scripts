@@ -69,13 +69,13 @@ sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv6.conf.all.forwarding=1
 
 # Setup iptables rules (IPv4 + IPv6) with persistence
-iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
-iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
-iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+iptables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${INTERFACE} -j ACCEPT
+iptables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${INTERFACE} -j ACCEPT
+iptables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
-ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
-ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
-ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
+ip6tables -C FORWARD -i ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${INTERFACE} -j ACCEPT
+ip6tables -C FORWARD -o ${INTERFACE} -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${INTERFACE} -j ACCEPT
+ip6tables -t nat -C POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE 2>/dev/null || ip6tables -t nat -A POSTROUTING -o ${MAIN_INTERFACE} -j MASQUERADE
 
 # Save iptables rules for persistence
 mkdir -p /etc/iptables

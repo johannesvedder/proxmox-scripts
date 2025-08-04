@@ -30,15 +30,24 @@ sysctl -w net.ipv6.conf.all.forwarding=1
 echo "Setting up firewall rules..."
 
 # todo make this configurable
-# Allow forwarding of traffic between bridge and external interface
-iptables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
-iptables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+# IPv4: Allow forwarding from bridge to external (vmbr0)
+iptables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || iptables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
+iptables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-# Enable NAT for container subnet going out via external interface
-iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
-#iptables -t nat -A POSTROUTING -o $(ip route get 8.8.8.8 | awk '{print $5; exit}') -j MASQUERADE
+# IPv4: Enable NAT for 192.168.100.0/24 subnet going out vmbr0
+iptables -t nat -C POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s 192.168.100.0/24 -o vmbr0 -j MASQUERADE
 
+# IPv6: Allow forwarding (adjust IPv6 bridge subnet as needed)
+ip6tables -C FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -i ${BRIDGE} -o vmbr0 -j ACCEPT
+ip6tables -C FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || ip6tables -A FORWARD -o ${BRIDGE} -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# IPv6: Enable NAT/MASQUERADE if using NAT66 (optional, not common unless behind NAT66 router)
+# Replace with your real IPv6 subnet if NAT66 is in use
+#ip6tables -t nat -C POSTROUTING -s fd00::/64 -o vmbr0 -j MASQUERADE 2>/dev/null || ip6tables -t nat -A POSTROUTING -s fd00::/64 -o vmbr0 -j MASQUERADE
+
+# Save rules
 iptables-save > /etc/iptables/rules.v4
+ip6tables-save > /etc/iptables/rules.v6
 
 # === Run container setup ===
 run_app_container "$SERVER_PUB_IP"
