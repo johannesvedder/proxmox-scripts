@@ -79,7 +79,7 @@ fi
 
 echo "📋 Getting container information..."
 NPM_CONTAINER_IP=$(docker inspect nginx-proxy-manager 2>/dev/null | grep '"IPAddress"' | tail -1 | cut -d'"' -f4 || echo "N/A")
-HOST_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "N/A")
+# HOST_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "N/A")
 
 echo "🛠️ Creating management script..."
 cat > /opt/nginx-proxy-manager/manage.sh << EOF
@@ -134,20 +134,20 @@ echo "   Memory: ${MEMORY}MB"
 echo "   Disk: ${DISK}GB"
 echo ""
 echo "🌐 Nginx Proxy Manager Admin Interface:"
-echo "   URL: http://${HOST_IP}:81"
+echo "   URL: http://${PUBLIC_IP}:81"
 echo "   Default Email: admin@example.com"
 echo "   Default Password: changeme"
 echo ""
 echo "📋 Container Information:"
 echo "   NPM Container IP: $NPM_CONTAINER_IP"
-echo "   Host IP: $HOST_IP"
+echo "   Host IP: $PUBLIC_IP"
 echo "   HTTP Port: 80"
 echo "   HTTPS Port: 443"
 echo "   Admin Port: 81"
 echo ""
 echo "🔧 Next Steps:"
 echo "1. Access the admin interface and change the default password"
-echo "2. Add your domain DNS records pointing to this server IP: $HOST_IP"
+echo "2. Add your domain DNS records pointing to this server IP: $PUBLIC_IP"
 echo "3. Create proxy hosts for your services"
 echo ""
 echo "🛠️ Management script created: npm-manage {start|stop|restart|logs|status|update}"
