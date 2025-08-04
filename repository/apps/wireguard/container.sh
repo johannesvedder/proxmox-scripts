@@ -4,6 +4,7 @@
 INTERFACE="${2:-wg0}"
 CLIENT_NAME="${3:-client1}"
 CLIENT_IP="${4:-10.0.0.2/32}"
+SUBNET="10.0.0.0/24"
 SERVER_IP="10.0.0.1/24"
 WG_PORT=51820
 
@@ -53,7 +54,15 @@ echo "Server public key: $SERVER_PUB"
 
 # Detect the main network interface
 MAIN_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
-echo "Detected main interface: $MAIN_INTERFACE"
+
+enable_ip_forwarding
+
+# Allow forwarding between WireGuard interface (wg0) and container's main interface (eth0)
+#iptables -A FORWARD -i "${INTERFACE}" -o "${MAIN_INTERFACE}" -j ACCEPT
+#iptables -A FORWARD -i "${MAIN_INTERFACE}" -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Masquerade outgoing traffic from VPN clients going out eth0
+iptables -t nat -A POSTROUTING -s "${SUBNET}" -o "${MAIN_INTERFACE}" -j MASQUERADE
 
 # Create server config
 cat > /etc/wireguard/${INTERFACE}.conf <<EOF
