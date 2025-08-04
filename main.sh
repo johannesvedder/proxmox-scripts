@@ -23,7 +23,8 @@ else
 fi
 export ROOT_DIR
 
-source "${ROOT_DIR}/helper/utils.sh"
+source "${ROOT_DIR}/helper/config_parser.sh"
+source "${ROOT_DIR}/helper/network.sh"
 source "${ROOT_DIR}/proxmox/container_tasks.sh"
 
 # Run menu.sh

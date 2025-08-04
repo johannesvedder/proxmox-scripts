@@ -38,9 +38,7 @@ else
 fi
 
 # 2. Enable IP forwarding
-echo "Enabling IP forwarding..."
-sysctl -w net.ipv4.ip_forward=1
-grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf || echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+enable_ip_forwarding
 
 # 3. # Add the MASQUERADE rule if not already present
 echo "Configuring NAT MASQUERADE on $PUBLIC_BRIDGE for $INTERNAL_SUBNET"
