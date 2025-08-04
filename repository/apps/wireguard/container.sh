@@ -84,6 +84,12 @@ chmod 600 /etc/wireguard/${INTERFACE}.conf
 mkdir -p ~/wireguard-clients
 chmod 700 ~/wireguard-clients
 
+if [ -n "${INTERNAL_SUBNET}" ]; then
+    ALLOWED_IPS="${SUBNET}, ${INTERNAL_SUBNET}"
+else
+    ALLOWED_IPS="${SUBNET}"
+fi
+
 cat > ~/wireguard-clients/${CLIENT_NAME}.conf <<EOF
 [Interface]
 PrivateKey = ${CLIENT_PRIV}
@@ -93,7 +99,8 @@ DNS = 1.1.1.1, 8.8.8.8
 [Peer]
 PublicKey = ${SERVER_PUB}
 Endpoint = ${PUBLIC_IP}:${WG_PORT}
-AllowedIPs = 0.0.0.0/0, ::/0
+# AllowedIPs = 0.0.0.0/0, ::/0
+AllowedIPs = ${ALLOWED_IPS}
 PersistentKeepalive = 25
 EOF
 

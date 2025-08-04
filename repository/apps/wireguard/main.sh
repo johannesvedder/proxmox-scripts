@@ -4,7 +4,7 @@
 set -e
 
 # Global network configuration
-PUBLIC_BRIDGE="${PUBLIC_BRIDGE:-vmbr0}" # WAN
+
 INTERNAL_BRIDGE="${INTERNAL_BRIDGE:-vmbr1}" # LAN
 
 # WireGuard server configuration
