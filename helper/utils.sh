@@ -33,4 +33,4 @@ update_config() {
     echo "$key=\"$value\"" >> "$CONFIG_FILE"
   fi
 }
-export update_config
+export -f update_config

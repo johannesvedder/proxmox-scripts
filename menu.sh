@@ -80,7 +80,7 @@ build_menu() {
                 # Special handling for apps directory
                 if [[ "$relative_path" == "apps" ]]; then
                     # Show apps directory as expandable
-                    menu_items+=("${prefix}📱 $basename/")
+                    menu_items+=("${prefix}🧩 $basename/")
                     item_types+=("dir")
                     item_paths+=("$relative_path")
 
