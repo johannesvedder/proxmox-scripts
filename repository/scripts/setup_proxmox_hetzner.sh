@@ -28,9 +28,15 @@ EOF
   # Restart networking to apply the new interface
   echo "Restarting networking to apply new interface..."
   systemctl restart networking
-  
-  # Wait a moment for interface to come up
-  sleep 2
+
+  # Wait for the interface to come up (timeout after 15 seconds)
+  for i in {1..10}; do
+    if ip link show "$INTERNAL_BRIDGE" | grep -q "state UP"; then
+      echo "$INTERNAL_BRIDGE is up."
+      break
+    fi
+    sleep 1
+  done
 else
   echo "$INTERNAL_BRIDGE already exists"
 fi
