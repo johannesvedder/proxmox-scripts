@@ -51,21 +51,7 @@ echo "Current NAT rules:"
 iptables -t nat -L POSTROUTING -nv --line-numbers
 
 # 4. Persist iptables rules
-if ! dpkg -l | grep -qw iptables-persistent; then
-  echo "Installing iptables-persistent..."
-  
-  # Pre-configure debconf selections for headless installation
-  echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
-  echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
-  
-  apt-get update && apt-get install -y iptables-persistent
-else
-  echo "iptables-persistent already installed"
-fi
-
-# Save current rules
-echo "Saving iptables rules..."
-netfilter-persistent save
+iptables-save > /etc/iptables/rules.v4
 
 # 5. DHCP server (optional)
 if [[ "$DHCP_ENABLED" == "true" ]]; then
