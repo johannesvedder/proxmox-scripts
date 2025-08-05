@@ -12,6 +12,11 @@ if ! command -v bash >/dev/null 2>&1; then
     apt install -y bash
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+    apt update
+    apt install -y jq
+fi
+
 GITHUB_USER="johannesvedder"
 GITHUB_REPO="proxmox-scripts"
 BRANCH="main"
