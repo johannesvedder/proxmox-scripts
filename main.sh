@@ -77,6 +77,9 @@ source "${ROOT_DIR}/helper/network.sh"
 source "${ROOT_DIR}/proxmox/container_tasks.sh"
 source "${ROOT_DIR}/tools/install_docker.sh"
 
+# ask for confirmation before proceeding
+read -rp "Are you sure you want to run the setup?"
+
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
 
