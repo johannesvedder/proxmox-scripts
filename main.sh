@@ -22,6 +22,7 @@ GITHUB_REPO="proxmox-scripts"
 BRANCH="main"
 ROOT_DIR="/opt/${GITHUB_REPO}"
 CONFIG_FILE="config.sh"
+echo "test"
 
 # Get latest remote commit SHA
 REMOTE_COMMIT_SHA=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/commits/$BRANCH" | jq -r '.sha')
