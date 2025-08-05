@@ -49,11 +49,11 @@ else
     LATEST_COMMIT_SHA=$(git -C "$ROOT_DIR" rev-parse HEAD)
   fi
 
-  echo "🔍 Local commit: $LATEST_COMMIT_SHA"
-  echo "🌐 Remote commit: $REMOTE_COMMIT_SHA"
+  # echo "🔍 Local commit: $LATEST_COMMIT_SHA"
+  # echo "🌐 Remote commit: $REMOTE_COMMIT_SHA"
 
   if [ "$REMOTE_COMMIT_SHA" != "$LATEST_COMMIT_SHA" ]; then
-    echo "🔄 New commit detected. Updating repo..."
+    # echo "🔄 New commit detected. Updating repo..."
 
     # Remove everything except conf.sh
     find "$ROOT_DIR" -mindepth 1 ! -wholename "$ROOT_DIR/$CONFIG_FILE" -exec rm -rf {} +
@@ -64,11 +64,11 @@ else
     git -C "$ROOT_DIR" fetch origin "$BRANCH"
     git -C "$ROOT_DIR" reset --hard "origin/$BRANCH"
 
-    echo "✅ Repo updated."
+    # echo "✅ Repo updated."
     update_config "LATEST_COMMIT_SHA" "$REMOTE_COMMIT_SHA"
-  else
-    echo "✅ Repo is already up to date."
-  fi
+  # else
+    # echo "✅ Repo is already up to date."
+  # fi
 fi
 
 export ROOT_DIR
