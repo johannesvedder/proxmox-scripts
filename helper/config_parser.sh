@@ -16,7 +16,7 @@ load_config() {
     echo "Config file loaded from $CONFIG_FILE"
   fi
 }
-export -f handle_config
+export -f load_config
 
 # Set default values for variables if not already set
 
