@@ -2,7 +2,7 @@
 # Configures Proxmox for Hetzner Cloud with NAT and DHCP
 
 # Use config or defaults
-DHCP_ENABLED="${DHCP_ENABLED:-true}"
+DHCP_ENABLED=false # "${DHCP_ENABLED:-true}"
 INTERNAL_BRIDGE="${INTERNAL_BRIDGE:-vmbr1}" # LAN
 INTERNAL_SUBNET="${INTERNAL_SUBNET:-192.168.100.0/24}"
 INTERNAL_NETMASK="${INTERNAL_NETMASK:-255.255.255.0}"
