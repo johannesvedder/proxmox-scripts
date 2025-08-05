@@ -17,7 +17,7 @@ ensure_dnat_port_forwarding() {
 
   # --- Check for existing PREROUTING DNAT rules ---
   local existing_dnat
-  existing_dnat=$(iptables -t nat -S PREROUTING | grep -- "-p $proto --dport $port" | grep DNAT || true)
+  existing_dnat=$(iptables -t nat -S PREROUTING | grep -- "-p $proto.*--dport $port" | grep DNAT || true)
 
   if [[ -n "$existing_dnat" ]]; then
     echo "⚠️ Found existing DNAT rule for $proto port $port:"
@@ -63,7 +63,7 @@ ensure_forward_rule() {
 
   # Check for existing FORWARD rule with matching proto/port but different target IP
   local existing_forward
-  existing_forward=$(iptables -S FORWARD | grep -- "-i $public_if -o $internal_if -p $proto --dport $port -d " || true)
+  existing_dnat=$(iptables -t nat -S PREROUTING | grep -E "\-p $proto\b.*--dport $port\b.*DNAT" || true)
 
   if [[ -n "$existing_forward" ]]; then
     echo "⚠️ Found existing FORWARD rule for $proto port $port:"

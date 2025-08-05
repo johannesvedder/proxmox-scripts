@@ -114,16 +114,16 @@ source "${ROOT_DIR}/helper/network.sh"
 source "${ROOT_DIR}/proxmox/container_tasks.sh"
 source "${ROOT_DIR}/tools/install_docker.sh"
 
-while true; do
-  read -rp "Are you sure you want to run the setup? [y/n] " yn < /dev/tty
-  case $yn in
-    [Yy]*) break ;;
-    [Nn]*) echo "❌ Setup aborted."; exit 0 ;;
-    *) echo "Please answer yes or no." ;;
-  esac
-done
+#while true; do
+#  read -rp "Are you sure you want to run the setup? [y/n] " yn < /dev/tty
+#  case $yn in
+#    [Yy]*) break ;;
+#    [Nn]*) echo "❌ Setup aborted."; exit 0 ;;
+#    *) echo "Please answer yes or no." ;;
+#  esac
+#done
 
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
 
-echo "✅ Setup complete!"
+echo "✅ Setup complete."
