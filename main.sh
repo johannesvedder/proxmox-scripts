@@ -78,7 +78,14 @@ source "${ROOT_DIR}/proxmox/container_tasks.sh"
 source "${ROOT_DIR}/tools/install_docker.sh"
 
 # ask for confirmation before proceeding
-read -rp "Are you sure you want to run the setup?"
+while true; do
+  read -rp "Are you sure you want to run the setup? [y/n] " yn
+  case $yn in
+    [Yy]*) break ;;
+    [Nn]*) echo "❌ Setup aborted."; exit 0 ;;
+    *) echo "Please answer yes or no." ;;
+  esac
+done
 
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
