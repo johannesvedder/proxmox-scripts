@@ -1,7 +1,4 @@
 #!/bin/bash
-# This script sets up Docker on a Proxmox host
-
-set -e
 
 install_docker() {
   if ! command -v docker &> /dev/null; then
@@ -25,5 +22,4 @@ install_docker() {
     return
   fi
 }
-
 export -f install_docker
