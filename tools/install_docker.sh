@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Notice: Community Repository is necessary for Docker installation on Alpine Linux.
+
 install_docker() {
   if ! command -v docker &> /dev/null; then
     echo "Docker not found, proceeding with installation..."
@@ -9,8 +11,8 @@ install_docker() {
     apk add --no-cache docker docker-compose curl openrc
 
     echo "🐳 Starting Docker service..."
-    rc-service docker start
     rc-update add docker default
+    service docker start
 
     echo "✅ Verifying Docker installation..."
     docker --version
