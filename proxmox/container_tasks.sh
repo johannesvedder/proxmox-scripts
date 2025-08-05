@@ -90,7 +90,14 @@ create_container () {
 
   # Wait for container to boot
   echo "⏳ Waiting for container to boot..."
-  sleep 15
+  # Wait up to 30 seconds for the container to be running
+  for i in {1..30}; do
+    if pct status "$CTID" | grep -q "running"; then
+      echo "✅ Container is running."
+      break
+    fi
+    sleep 1
+  done
 
   # Get the container IP (retry a few times)
   CONTAINER_IP=""
@@ -124,6 +131,8 @@ run_app_container () {
 
   echo "📦 Preparing environment for container..."
 
+  pct exec "$CTID" -- sh -c "command -v bash >/dev/null 2>&1 || apk add --no-cache bash"
+
   local TMP_ENV
   TMP_ENV=$(dump_environment)
 
@@ -132,7 +141,7 @@ run_app_container () {
   pct push "$CTID" "${APP_DIR}/container.sh" /root/container.sh
 
   echo "🚀 Running container script with env + args: $*"
-  pct exec "$CTID" -- sh -c ". /root/host_env.sh; /root/container.sh \"$@\"" _ "$@"
+  pct exec "$CTID" -- bash -c ". /root/host_env.sh; /root/container.sh \"$@\"" _ "$@"
 
   # Clean up
   pct exec "$CTID" -- rm -f /root/container.sh /root/host_env.sh
