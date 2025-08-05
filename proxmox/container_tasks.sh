@@ -13,7 +13,7 @@ dump_environment() {
 
   echo "$TMP_ENV"
 }
-
+export -f dump_environment
 
 create_container () {
   # Source the argparse script to parse command line arguments and override defaults
