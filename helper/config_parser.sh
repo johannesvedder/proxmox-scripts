@@ -4,16 +4,18 @@ load_config() {
   # Create config file in $ROOT_DIR
   CONFIG_FILE="$ROOT_DIR/config.sh"
   export CONFIG_FILE
+
   if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "Creating new config file at $CONFIG_FILE"
     touch "$CONFIG_FILE"
     chmod +x "$CONFIG_FILE"
-    echo "Config file created at $CONFIG_FILE"
   else
+    echo "Loading existing config file from $CONFIG_FILE"
+    echo "Config file size: $(wc -l < "$CONFIG_FILE") lines"
     # Export all variables from config.sh
     set -a
     source "$CONFIG_FILE"
     set +a
-    echo "Config file loaded from $CONFIG_FILE"
   fi
 }
 export -f load_config
@@ -32,23 +34,23 @@ if [[ -z "$PUBLIC_BRIDGE" ]]; then
   export PUBLIC_BRIDGE
 fi
 
-#if [[ -z "$INTERNAL_SUBNET" ]]; then
-#  INTERNAL_SUBNET=$(ip -o -f inet addr show vmbr0 | awk '{print $4}' | head -n1)
-#  export INTERNAL_SUBNET
-#fi
-
+# Improved update_config with better error handling
 update_config() {
   local key="$1"
   local value="$2"
 
   # Check if the key already exists
   if grep -q "^$key=" "$CONFIG_FILE"; then
+    echo "Updating existing key: $key"
     # Update the existing key
     sed -i "s|^$key=.*|$key=\"$value\"|" "$CONFIG_FILE"
   else
+    echo "Adding new key: $key"
     # Add the new key
     echo "$key=\"$value\"" >> "$CONFIG_FILE"
   fi
+
+  echo "Config size after update: $(wc -l < "$CONFIG_FILE") lines"
 
   # Export the updated variable
   export "$key"="$value"
