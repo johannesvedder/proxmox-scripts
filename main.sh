@@ -71,12 +71,6 @@ else
     # CONFIG_DIR=$(dirname "$ROOT_DIR/$CONFIG_FILE")
     # find "$ROOT_DIR" -mindepth 1 ! -path "$ROOT_DIR/$CONFIG_FILE" ! -path "$CONFIG_DIR" ! -path "$CONFIG_DIR/*" -delete
 
-    # Method 3: Alternative - use rsync to sync and preserve config
-    # TEMP_DIR=$(mktemp -d)
-    # git clone --branch "$BRANCH" "https://github.com/$GITHUB_USER/$GITHUB_REPO" "$TEMP_DIR"
-    # rsync -av --delete --exclude="$(basename "$CONFIG_FILE")" "$TEMP_DIR/" "$ROOT_DIR/"
-    # rm -rf "$TEMP_DIR"
-
     # Re-clone or pull
     git -C "$ROOT_DIR" init
     git -C "$ROOT_DIR" remote add origin "https://github.com/$GITHUB_USER/$GITHUB_REPO" 2>/dev/null || true
