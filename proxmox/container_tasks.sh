@@ -2,6 +2,19 @@
 
 set -e
 
+dump_environment() {
+  local TMP_ENV="/tmp/env_push.sh"
+
+  # Dump exported env vars
+  export -p > "$TMP_ENV"
+
+  # Dump functions (Bash-only)
+  declare -f >> "$TMP_ENV"
+
+  echo "$TMP_ENV"
+}
+
+
 create_container () {
   # Source the argparse script to parse command line arguments and override defaults
   source "${ROOT_DIR}/helper/argparse.sh"
@@ -109,9 +122,21 @@ run_app_container () {
     exit 1
   fi
 
-  echo "Running container script with arguments: $*"
+  echo "📦 Preparing environment for container..."
+
+  local TMP_ENV
+  TMP_ENV=$(dump_environment)
+
+  # Push environment and script
+  pct push "$CTID" "$TMP_ENV" /root/host_env.sh
   pct push "$CTID" "${APP_DIR}/container.sh" /root/container.sh
-  pct exec "$CTID" -- sh -c ". /root/container.sh $*"
-  pct exec "$CTID" -- rm -f /root/container.sh
+
+  echo "🚀 Running container script with env + args: $*"
+  pct exec "$CTID" -- sh -c ". /root/host_env.sh; /root/container.sh \"$@\"" _ "$@"
+
+  # Clean up
+  pct exec "$CTID" -- rm -f /root/container.sh /root/host_env.sh
+  rm -f "$TMP_ENV"
 }
+
 export -f run_app_container

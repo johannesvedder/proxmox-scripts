@@ -14,7 +14,7 @@ MAIN_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
 echo "Installing WireGuard..."
 
 echo "Setting up repositories..."
-#setup-apkrepos -cf
+
 cat > /etc/apk/repositories << EOF
 https://dl-cdn.alpinelinux.org/alpine/v$(cat /etc/alpine-release | cut -d'.' -f1,2)/main
 https://dl-cdn.alpinelinux.org/alpine/v$(cat /etc/alpine-release | cut -d'.' -f1,2)/community
