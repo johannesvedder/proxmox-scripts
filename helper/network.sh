@@ -26,9 +26,10 @@ ensure_dnat_port_forwarding() {
     if ! echo "$existing_dnat" | grep -q "$target_ip"; then
       read -rp "❓ Forwarding goes to another IP. Replace with $target_ip? (y/N): " confirm
       if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        # Convert -A to -D to delete the existing rule
         local delete_rule
         delete_rule=$(echo "$existing_dnat" | sed 's/^-A /-D /')
-        iptables -t nat "$delete_rule"
+        eval "iptables -t nat $delete_rule"
         echo "✅ Old rule removed."
       else
         echo "⏭️ Skipping $proto port $port."
@@ -36,13 +37,17 @@ ensure_dnat_port_forwarding() {
       fi
     else
       echo "✅ DNAT rule already targets $target_ip. Skipping add."
+      return
     fi
   fi
 
   # --- Add DNAT rule ---
-  if ! echo "$existing_dnat" | grep -q "$target_ip"; then
+  # Check if rule exists before adding (using -C to check)
+  if ! iptables -t nat -C PREROUTING -i "$public_if" -p "$proto" --dport "$port" -j DNAT --to-destination "${target_ip}:${port}" 2>/dev/null; then
     iptables -t nat -A PREROUTING -i "$public_if" -p "$proto" --dport "$port" -j DNAT --to-destination "${target_ip}:${port}"
     echo "✅ Added DNAT for $proto $port to $target_ip"
+  else
+    echo "✅ DNAT rule already exists for $proto $port to $target_ip"
   fi
 }
 export -f ensure_dnat_port_forwarding
@@ -70,7 +75,7 @@ ensure_forward_rule() {
         # Convert -A to -D to delete the existing rule
         local delete_rule
         delete_rule=$(echo "$existing_forward" | sed 's/^-A /-D /')
-        iptables $delete_rule
+        eval "iptables $delete_rule"
         echo "✅ Removed old FORWARD rule."
       else
         echo "⏭️ Skipping FORWARD rule update for $proto port $port."
@@ -86,6 +91,8 @@ ensure_forward_rule() {
   if ! iptables -C FORWARD -i "$public_if" -o "$internal_if" -p "$proto" --dport "$port" -d "$target_ip" -j ACCEPT 2>/dev/null; then
     iptables -A FORWARD -i "$public_if" -o "$internal_if" -p "$proto" --dport "$port" -d "$target_ip" -j ACCEPT
     echo "✅ Added FORWARD rule for $proto port $port to $target_ip."
+  else
+    echo "✅ FORWARD rule already exists for $proto port $port to $target_ip"
   fi
 }
 export -f ensure_forward_rule
