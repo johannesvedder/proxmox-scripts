@@ -99,4 +99,4 @@ source "${ROOT_DIR}/tools/install_docker.sh"
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
 
-echo "✅ Setup complete."
+echo "✅ Setup complete!"
