@@ -50,14 +50,32 @@ else
     LATEST_COMMIT_SHA=$(git -C "$ROOT_DIR" rev-parse HEAD)
   fi
 
-  # echo "🔍 Local commit: $LATEST_COMMIT_SHA"
-  # echo "🌐 Remote commit: $REMOTE_COMMIT_SHA"
-
   if [ "$REMOTE_COMMIT_SHA" != "$LATEST_COMMIT_SHA" ]; then
-    # echo "🔄 New commit detected. Updating repo..."
+    # Method 1: Backup config, remove all, restore config
+    CONFIG_BACKUP="/tmp/$(basename "$CONFIG_FILE").backup.$"
+    if [ -f "$ROOT_DIR/$CONFIG_FILE" ]; then
+      cp "$ROOT_DIR/$CONFIG_FILE" "$CONFIG_BACKUP"
+    fi
 
-    # Remove everything except config file
-    find "$ROOT_DIR" -mindepth 1 ! -path "$ROOT_DIR/$CONFIG_FILE" -delete
+    # Remove everything in ROOT_DIR except the directory itself
+    find "$ROOT_DIR" -mindepth 1 -delete
+
+    # Restore config
+    if [ -f "$CONFIG_BACKUP" ]; then
+      # Recreate parent directory structure if needed
+      mkdir -p "$(dirname "$ROOT_DIR/$CONFIG_FILE")"
+      mv "$CONFIG_BACKUP" "$ROOT_DIR/$CONFIG_FILE"
+    fi
+
+    # Method 2: Alternative - exclude parent directories of config file
+    # CONFIG_DIR=$(dirname "$ROOT_DIR/$CONFIG_FILE")
+    # find "$ROOT_DIR" -mindepth 1 ! -path "$ROOT_DIR/$CONFIG_FILE" ! -path "$CONFIG_DIR" ! -path "$CONFIG_DIR/*" -delete
+
+    # Method 3: Alternative - use rsync to sync and preserve config
+    # TEMP_DIR=$(mktemp -d)
+    # git clone --branch "$BRANCH" "https://github.com/$GITHUB_USER/$GITHUB_REPO" "$TEMP_DIR"
+    # rsync -av --delete --exclude="$(basename "$CONFIG_FILE")" "$TEMP_DIR/" "$ROOT_DIR/"
+    # rm -rf "$TEMP_DIR"
 
     # Re-clone or pull
     git -C "$ROOT_DIR" init
@@ -65,10 +83,7 @@ else
     git -C "$ROOT_DIR" fetch origin "$BRANCH"
     git -C "$ROOT_DIR" reset --hard "origin/$BRANCH"
 
-    # echo "✅ Repo updated."
     update_config "LATEST_COMMIT_SHA" "$REMOTE_COMMIT_SHA"
-  # else
-    # echo "✅ Repo is already up to date."
   fi
 fi
 
