@@ -21,7 +21,6 @@ GITHUB_USER="johannesvedder"
 GITHUB_REPO="proxmox-scripts"
 BRANCH="main"
 ROOT_DIR="/opt/${GITHUB_REPO}"
-CONFIG_FILE="config.sh"
 
 # Get latest remote commit SHA
 REMOTE_COMMIT_SHA=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/commits/$BRANCH" | jq -r '.sha')
@@ -65,12 +64,12 @@ else
     CONFIG_BACKUP="/tmp/$(basename "$CONFIG_FILE").backup.$$"
 
     # Backup the entire config file if it exists
-    if [ -f "$ROOT_DIR/$CONFIG_FILE" ]; then
+    if [ -f "$CONFIG_FILE" ]; then
       echo "📄 Backing up config file..."
-      cp "$ROOT_DIR/$CONFIG_FILE" "$CONFIG_BACKUP"
+      cp "$CONFIG_FILE" "$CONFIG_BACKUP"
       echo "   Config backed up to: $CONFIG_BACKUP"
     else
-      echo "⚠️  No config file found at $ROOT_DIR/$CONFIG_FILE"
+      echo "⚠️  No config file found at $CONFIG_FILE"
     fi
 
     # Clean the directory
@@ -88,8 +87,8 @@ else
     if [ -f "$CONFIG_BACKUP" ]; then
       echo "📄 Restoring config file..."
       # Recreate parent directory structure if needed
-      mkdir -p "$(dirname "$ROOT_DIR/$CONFIG_FILE")"
-      cp "$CONFIG_BACKUP" "$ROOT_DIR/$CONFIG_FILE"
+      mkdir -p "$(dirname "$CONFIG_FILE")"
+      cp "$CONFIG_BACKUP" "$CONFIG_FILE"
       rm -f "$CONFIG_BACKUP"
       echo "   Config restored"
 
