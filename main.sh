@@ -55,8 +55,8 @@ else
   if [ "$REMOTE_COMMIT_SHA" != "$LATEST_COMMIT_SHA" ]; then
     # echo "🔄 New commit detected. Updating repo..."
 
-    # Remove everything except conf.sh
-    find "$ROOT_DIR" -mindepth 1 ! -wholename "$ROOT_DIR/$CONFIG_FILE" -exec rm -rf {} +
+    # Remove everything except config file
+    find "$ROOT_DIR" -mindepth 1 ! -path "$ROOT_DIR/$CONFIG_FILE" -delete
 
     # Re-clone or pull
     git -C "$ROOT_DIR" init
