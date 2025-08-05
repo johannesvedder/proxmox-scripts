@@ -56,7 +56,7 @@ else
     echo "🔄 New commit detected. Updating repo..."
 
     # Remove everything except conf.sh
-    find "$ROOT_DIR" -mindepth 1 ! -name "$CONFIG_FILE" -exec rm -rf {} +
+    find "$ROOT_DIR" -mindepth 1 ! -wholename "$ROOT_DIR/$CONFIG_FILE" -exec rm -rf {} +
 
     # Re-clone or pull
     git -C "$ROOT_DIR" init
