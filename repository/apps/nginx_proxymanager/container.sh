@@ -25,10 +25,7 @@ services:
       # Public HTTPS Port
       - "443:443"
       # Admin Web Port
-      - "81:81"
-    environment:
-      # Optional: Set timezone
-      TZ: UTC
+      # - "81:81"
     volumes:
       - ./config:/app/config
       - ./data:/data
@@ -84,7 +81,7 @@ done
 # HOST_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "N/A")
 
 echo "🛠️ Creating management script..."
-cat > /opt/nginx-proxy-manager/manage.sh << EOF
+cat > /opt/nginx-proxy-manager/manage.sh << 'EOF'
 #!/bin/bash
 # Nginx Proxy Manager Management Script
 
@@ -137,3 +134,29 @@ echo "   Default Email: admin@example.com"
 echo "   Default Password: changeme"
 echo ""
 echo "🛠️ Management script created: npm-manage {start|stop|restart|logs|status|update}"
+
+# To access the Nginx Proxy Manager admin interface with SSL via IP address:
+# 1. Generate a self-signed certificate:
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /opt/nginx-proxy-manager/ssl.key -out /opt/nginx-proxy-manager/ssl.crt
+# 2. Update the Nginx Proxy Manager configuration to use the self-signed certificate
+# 3. Create the file http.conf at /opt/nginx-proxy-manager/data/nginx/custom/
+# 4. Add the following lines to http.conf:
+#server {
+#    listen 443 ssl default_server;
+#    server_name 192.168.100.101; # Replace with your container's IP address
+#
+#    ssl_certificate /data/custom_ssl/npm-XX/fullchain.pem;
+#    ssl_certificate_key /data/custom_ssl/npm-XX/privkey.pem;
+#
+#    location / {
+#        proxy_pass http://127.0.0.1:81;
+#        proxy_set_header Host $host;
+#        proxy_set_header X-Real-IP $remote_addr;
+#        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#        proxy_set_header X-Forwarded-Proto $scheme;
+#    }
+#}
+# 5. Restart the Nginx Proxy Manager container:
+# docker-compose restart nginx-proxy-manager
+# 6. Access the admin interface via:
+# https://<CONTAINER_IP>/
