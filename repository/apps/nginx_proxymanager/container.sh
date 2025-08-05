@@ -57,16 +57,27 @@ echo "🚀 Starting Nginx Proxy Manager..."
 cd /opt/nginx-proxy-manager && docker-compose up -d
 
 echo "⏳ Waiting for Nginx Proxy Manager to start..."
-sleep 15
 
-echo "🔍 Checking if Nginx Proxy Manager is running..."
-if cd /opt/nginx-proxy-manager && docker-compose ps | grep -q "nginx-proxy-manager.*Up"; then
+max_attempts=6
+attempt=1
+sleep_interval=5
+
+while true; do
+  if cd /opt/nginx-proxy-manager && docker-compose ps | grep -q "nginx-proxy-manager.*Up"; then
     echo "✅ Nginx Proxy Manager is running successfully!"
-else
-    echo "❌ Nginx Proxy Manager failed to start. Checking logs..."
-    cd /opt/nginx-proxy-manager && docker-compose logs
-    exit 1
-fi
+    break
+  else
+    if (( attempt >= max_attempts )); then
+      echo "❌ Nginx Proxy Manager failed to start after $(( max_attempts * sleep_interval )) seconds. Checking logs..."
+      cd /opt/nginx-proxy-manager && docker-compose logs
+      exit 1
+    else
+      echo "⏳ Attempt $attempt/$max_attempts: Nginx Proxy Manager is not up yet, waiting $sleep_interval seconds..."
+      ((attempt++))
+      sleep $sleep_interval
+    fi
+  fi
+done
 
 # echo "📋 Getting container information..."
 # NPM_CONTAINER_IP=$(docker inspect nginx-proxy-manager 2>/dev/null | grep '"IPAddress"' | tail -1 | cut -d'"' -f4 || echo "N/A")
