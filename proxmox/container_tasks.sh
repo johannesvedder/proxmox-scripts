@@ -138,7 +138,9 @@ run_app_container () {
 
   # Push environment and script
   pct push "$CTID" "$TMP_ENV" /root/host_env.sh
+  pct exec "$CTID" -- chmod +x /root/host_env.sh
   pct push "$CTID" "${APP_DIR}/container.sh" /root/container.sh
+  pct exec "$CTID" -- chmod +x /root/container.sh
 
   echo "🚀 Running container script with env + args: $*"
   pct exec "$CTID" -- bash -c ". /root/host_env.sh; /root/container.sh \"$@\"" _ "$@"
