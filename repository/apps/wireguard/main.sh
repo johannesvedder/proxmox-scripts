@@ -27,22 +27,21 @@ enable_ip_forwarding
 echo "Setting up firewall rules..."
 
 # DNAT: Forward incoming WireGuard traffic on UDP to container
-iptables -t nat -A PREROUTING -i "${PUBLIC_BRIDGE}" -p udp --dport "${WG_PORT}" -j DNAT --to-destination "${CONTAINER_IP}":"${WG_PORT}"
+#iptables -t nat -A PREROUTING -i "${PUBLIC_BRIDGE}" -p udp --dport "${WG_PORT}" -j DNAT --to-destination "${CONTAINER_IP}":"${WG_PORT}"
+ensure_dnat_port_forwarding "udp" "$WG_PORT" "$CONTAINER_IP" "$PUBLIC_BRIDGE"
 
 # Allow incoming WireGuard traffic to be forwarded to container
-iptables -A FORWARD -i "${PUBLIC_BRIDGE}" -o "${INTERNAL_BRIDGE}" -p udp --dport "${WG_PORT}" -d "${CONTAINER_IP}" -j ACCEPT
+#iptables -A FORWARD -i "${PUBLIC_BRIDGE}" -o "${INTERNAL_BRIDGE}" -p udp --dport "${WG_PORT}" -d "${CONTAINER_IP}" -j ACCEPT
+ensure_forward_rule udp "$WG_PORT" "$CONTAINER_IP" "$PUBLIC_BRIDGE" "$INTERNAL_BRIDGE"
 
 # Allow container to reply (return traffic)
-iptables -A FORWARD -i "${INTERNAL_BRIDGE}" -o "${PUBLIC_BRIDGE}" -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-# Allow containers to initiate outbound connections
-#iptables -A FORWARD -s 192.168.100.0/24 -o vmbr0 -j ACCEPT
-
-# Allow return traffic from WAN to containers
-#iptables -A FORWARD -d 192.168.100.0/24 -i vmbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+if ! iptables -C FORWARD -i "${INTERNAL_BRIDGE}" -o "${PUBLIC_BRIDGE}" -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null; then
+  iptables -A FORWARD -i "${INTERNAL_BRIDGE}" -o "${PUBLIC_BRIDGE}" -m state --state RELATED,ESTABLISHED -j ACCEPT
+  echo "✅ Added FORWARD rule to allow return traffic from ${INTERNAL_BRIDGE} to ${PUBLIC_BRIDGE}"
+fi
 
 # Save rules
-iptables-save > /etc/iptables/rules.v4
+save_iptables_rules
 
 # === Run container setup ===
 run_app_container "$SERVER_PUB_IP"

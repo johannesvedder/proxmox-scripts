@@ -54,24 +54,3 @@ update_config() {
   export "$key"="$value"
 }
 export -f update_config
-
-#request_config() {
-#  local key="$1"
-#  local prompt="$2"
-#  local default_value="$3"
-
-  # Check if the key already exists
-#  if grep -q "^$key=" "$CONFIG_FILE"; then
-    # If it exists, read the value from the config file
-#    value=$(grep "^$key=" "$CONFIG_FILE" | cut -d'=' -f2- | tr -d '"')
-#    echo "Current value for $key: $value"
-#  else
-    # If it doesn't exist, prompt the user for input
-#    read -rp "$prompt [$default_value]: " value
-#    value=${value:-$default_value}
-#  fi
-
-  # Update the config file with the new value
-#  update_config "$key" "$value"
-#}
-#export -f request_config
