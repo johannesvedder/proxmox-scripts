@@ -46,12 +46,8 @@ if ! iptables -t nat -C POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MAS
   iptables -t nat -A POSTROUTING -s $INTERNAL_SUBNET -o $PUBLIC_BRIDGE -j MASQUERADE
 fi
 
-# Verify the rule was added
-echo "Current NAT rules:"
-iptables -t nat -L POSTROUTING -nv --line-numbers
-
 # 4. Persist iptables rules
-iptables-save > /etc/iptables/rules.v4
+save_iptables_rules
 
 # 5. DHCP server (optional)
 if [[ "$DHCP_ENABLED" == "true" ]]; then
