@@ -58,9 +58,9 @@ save_iptables_rules
 read -rp "Do you want to install and configure the ISC DHCP server? [Y/n]: " dhcp_choice
 dhcp_choice=${dhcp_choice:-n}
 if [[ "$dhcp_choice" =~ ^[Yy]$ ]]; then
-  echo "Installing/configuring ISC DHCP server..."
 
-  apt-get install -y isc-dhcp-server
+  echo "Installing/configuring ISC DHCP server..."
+  apt-get install -y isc-dhcp-server >/dev/null 2>&1
 
   # Configure which interface DHCP should listen on
   echo "Configuring DHCP server to listen on $INTERNAL_BRIDGE"

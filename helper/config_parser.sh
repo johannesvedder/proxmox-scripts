@@ -41,16 +41,12 @@ update_config() {
 
   # Check if the key already exists
   if grep -q "^$key=" "$CONFIG_FILE"; then
-    echo "Updating existing key: $key"
     # Update the existing key
     sed -i "s|^$key=.*|$key=\"$value\"|" "$CONFIG_FILE"
   else
-    echo "Adding new key: $key"
     # Add the new key
     echo "$key=\"$value\"" >> "$CONFIG_FILE"
   fi
-
-  echo "Config size after update: $(wc -l < "$CONFIG_FILE") lines"
 
   # Export the updated variable
   export "$key"="$value"
