@@ -2,7 +2,6 @@
 # Configures Proxmox for Hetzner Cloud with NAT and DHCP
 
 # Use config or defaults
-DHCP_ENABLED=false # "${DHCP_ENABLED:-true}"
 INTERNAL_BRIDGE="${INTERNAL_BRIDGE:-vmbr1}" # LAN
 INTERNAL_SUBNET="${INTERNAL_SUBNET:-192.168.100.0/24}"
 INTERNAL_NETMASK="${INTERNAL_NETMASK:-255.255.255.0}"
@@ -11,7 +10,6 @@ DHCP_RANGE_START="${DHCP_RANGE_START:-192.168.100.100}"
 DHCP_RANGE_END="${DHCP_RANGE_END:-192.168.100.200}"
 PUBLIC_BRIDGE="${PUBLIC_BRIDGE:-vmbr0}" # WAN
 
-echo "DHCP enabled: $DHCP_ENABLED"
 echo "Public bridge: $PUBLIC_BRIDGE, IP: $PUBLIC_IP, Gateway: $GATEWAY"
 
 # 1. Create internal bridge if missing
@@ -50,12 +48,16 @@ fi
 save_iptables_rules
 
 # 5. DHCP server (optional)
-if [[ "$DHCP_ENABLED" == "true" ]]; then
+# Check if DHCP server should be installed
+read -rp "Do you want to install and configure the ISC DHCP server? [Y/n]: " dhcp_choice
+dhcp_choice=${dhcp_choice:-n}
+if [[ "$dhcp_choice" =~ ^[Yy]$ ]]; then
   echo "Installing/configuring ISC DHCP server..."
 
   apt-get install -y isc-dhcp-server
 
   # Configure which interface DHCP should listen on
+  echo "Configuring DHCP server to listen on $INTERNAL_BRIDGE"
   sed -i "s/^INTERFACESv4=.*/INTERFACESv4=\"$INTERNAL_BRIDGE\"/" /etc/default/isc-dhcp-server
 
   # Backup original config if it exists

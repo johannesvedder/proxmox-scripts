@@ -114,6 +114,7 @@ create_container () {
       echo "✅ Container IP: $CONTAINER_IP" >&2
   else
       echo "⚠️  Could not determine container IP, but container is running" >&2
+      exit 1
   fi
 
   export CTID
