@@ -34,18 +34,18 @@ umask 077
 
 # Generate server keys if not exist
 if [ ! -f /etc/wireguard/keys/server_private.key ]; then
-    echo "Generating server keys..."
-    wg genkey > /etc/wireguard/keys/server_private.key
-    wg pubkey < /etc/wireguard/keys/server_private.key > /etc/wireguard/keys/server_public.key
-    chmod 600 /etc/wireguard/keys/server_private.key
+  echo "Generating server keys..."
+  wg genkey > /etc/wireguard/keys/server_private.key
+  wg pubkey < /etc/wireguard/keys/server_private.key > /etc/wireguard/keys/server_public.key
+  chmod 600 /etc/wireguard/keys/server_private.key
 fi
 
 # Generate client keys if not exist
 if [ ! -f /etc/wireguard/keys/${CLIENT_NAME}_private.key ]; then
-    echo "Generating client keys..."
-    wg genkey > /etc/wireguard/keys/${CLIENT_NAME}_private.key
-    wg pubkey < /etc/wireguard/keys/${CLIENT_NAME}_private.key > /etc/wireguard/keys/${CLIENT_NAME}_public.key
-    chmod 600 /etc/wireguard/keys/${CLIENT_NAME}_private.key
+  echo "Generating client keys..."
+  wg genkey > /etc/wireguard/keys/${CLIENT_NAME}_private.key
+  wg pubkey < /etc/wireguard/keys/${CLIENT_NAME}_private.key > /etc/wireguard/keys/${CLIENT_NAME}_public.key
+  chmod 600 /etc/wireguard/keys/${CLIENT_NAME}_private.key
 fi
 
 SERVER_PRIV=$(cat /etc/wireguard/keys/server_private.key)
@@ -85,9 +85,11 @@ mkdir -p ~/wireguard-clients
 chmod 700 ~/wireguard-clients
 
 if [ -n "${INTERNAL_SUBNET}" ]; then
-    ALLOWED_IPS="${SUBNET}, ${INTERNAL_SUBNET}"
+  echo "Allowing access to internal subnet ${INTERNAL_SUBNET}..."
+  ALLOWED_IPS="${SUBNET}, ${INTERNAL_SUBNET}"
 else
-    ALLOWED_IPS="${SUBNET}"
+  echo "No internal subnet specified. Allowing access to WireGuard subnet ${SUBNET} only..."
+  ALLOWED_IPS="${SUBNET}"
 fi
 
 cat > ~/wireguard-clients/${CLIENT_NAME}.conf <<EOF
@@ -115,19 +117,19 @@ wg-quick up ${INTERFACE}
 # Set up WireGuard to start on boot using the proper OpenRC method
 echo "Setting up WireGuard service for ${INTERFACE}..."
 if [ -f /etc/init.d/wg-quick ]; then
-    # Create symbolic link for the interface
-    ln -sf /etc/init.d/wg-quick /etc/init.d/wg-quick.${INTERFACE}
+  # Create symbolic link for the interface
+  ln -sf /etc/init.d/wg-quick /etc/init.d/wg-quick.${INTERFACE}
 
-    # Enable the service to start on boot
-    rc-update add wg-quick.${INTERFACE} default
+  # Enable the service to start on boot
+  rc-update add wg-quick.${INTERFACE} default
 
-    echo "✅ WireGuard service wg-quick.${INTERFACE} enabled for boot"
-    echo "📝 You can manage the service with:"
-    echo "   rc-service wg-quick.${INTERFACE} start"
-    echo "   rc-service wg-quick.${INTERFACE} stop"
-    echo "   rc-service wg-quick.${INTERFACE} restart"
+  echo "✅ WireGuard service wg-quick.${INTERFACE} enabled for boot"
+  echo "📝 You can manage the service with:"
+  echo "   rc-service wg-quick.${INTERFACE} start"
+  echo "   rc-service wg-quick.${INTERFACE} stop"
+  echo "   rc-service wg-quick.${INTERFACE} restart"
 else
-    echo "⚠️ Warning: /etc/init.d/wg-quick not found. WireGuard may not be properly installed."
+  echo "⚠️ Warning: /etc/init.d/wg-quick not found. WireGuard may not be properly installed."
 fi
 
 echo "✅ WireGuard server setup complete!"
@@ -142,11 +144,11 @@ echo "📁 Client config: ~/wireguard-clients/${CLIENT_NAME}.conf"
 
 # Show QR code for mobile clients
 if command -v qrencode &> /dev/null; then
-    echo ""
-    echo "📱 QR code for mobile clients:"
-    qrencode -t ansiutf8 < ~/wireguard-clients/${CLIENT_NAME}.conf
+  echo ""
+  echo "📱 QR code for mobile clients:"
+  qrencode -t ansiutf8 < ~/wireguard-clients/${CLIENT_NAME}.conf
 else
-    echo "⚠️ qrencode not found. Install it with: apk add qrencode"
+  echo "⚠️ qrencode not found. Install it with: apk add qrencode"
 fi
 
 # Show current WireGuard status

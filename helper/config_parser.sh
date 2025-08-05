@@ -1,19 +1,22 @@
 #!/bin/bash
 
-# Create config file in $ROOT_DIR
-CONFIG_FILE="$ROOT_DIR/config.sh"
-export CONFIG_FILE
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  touch "$CONFIG_FILE"
-  chmod +x "$CONFIG_FILE"
-  echo "Config file created at $CONFIG_FILE"
-else
-  # Export all variables from config.sh
-  set -a
-  source "$CONFIG_FILE"
-  set +a
-  echo "Config file loaded from $CONFIG_FILE"
-fi
+load_config() {
+  # Create config file in $ROOT_DIR
+  CONFIG_FILE="$ROOT_DIR/config.sh"
+  export CONFIG_FILE
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    touch "$CONFIG_FILE"
+    chmod +x "$CONFIG_FILE"
+    echo "Config file created at $CONFIG_FILE"
+  else
+    # Export all variables from config.sh
+    set -a
+    source "$CONFIG_FILE"
+    set +a
+    echo "Config file loaded from $CONFIG_FILE"
+  fi
+}
+export -f handle_config
 
 # Set default values for variables if not already set
 
