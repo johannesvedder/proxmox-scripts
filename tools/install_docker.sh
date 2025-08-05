@@ -3,18 +3,27 @@
 
 set -e
 
-echo "Installing Docker..."
+install_docker() {
+  if ! command -v docker &> /dev/null; then
+    echo "Docker not found, proceeding with installation..."
 
-apk update
-apk upgrade
-apk add --no-cache docker docker-compose curl openrc
+    apk update
+    apk upgrade
+    apk add --no-cache docker docker-compose curl openrc
 
-echo "🐳 Starting Docker service..."
-rc-service docker start
-rc-update add docker default
+    echo "🐳 Starting Docker service..."
+    rc-service docker start
+    rc-update add docker default
 
-echo "✅ Verifying Docker installation..."
-docker --version
-docker-compose --version
+    echo "✅ Verifying Docker installation..."
+    docker --version
+    docker-compose --version
 
-echo "Docker installation complete."
+    echo "Docker installation complete."
+  else
+    echo "Docker is already installed."
+    return
+  fi
+}
+
+export -f install_docker

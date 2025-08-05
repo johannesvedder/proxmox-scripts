@@ -7,7 +7,7 @@ echo "🚀 Setting up Alpine LXC with Docker and Nginx Proxy Manager..."
 
 echo "📦 Updating Alpine and installing Docker..."
 
-. "${ROOT_DIR}/tools/install_docker.sh"
+install_docker
 
 echo "📁 Creating Nginx Proxy Manager directory structure..."
 mkdir -p /opt/nginx-proxy-manager/{data,letsencrypt,config}

@@ -26,6 +26,7 @@ export ROOT_DIR
 source "${ROOT_DIR}/helper/config_parser.sh"
 source "${ROOT_DIR}/helper/network.sh"
 source "${ROOT_DIR}/proxmox/container_tasks.sh"
+source "${ROOT_DIR}/tools/install_docker.sh"
 
 # Run menu.sh
 bash "${ROOT_DIR}/menu.sh"
