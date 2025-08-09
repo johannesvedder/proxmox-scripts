@@ -100,11 +100,15 @@ export -f ensure_forward_rule
 save_iptables_rules() {
     echo "🔒 Saving iptables rules..."
     if grep -qi alpine /etc/os-release; then
-      rc-update add iptables 2>/dev/null
-      rc-service iptables save
+        rc-update add iptables default 2>/dev/null
+        rc-service iptables save
     elif grep -qi debian /etc/os-release || grep -qi ubuntu /etc/os-release; then
-      mkdir -p /etc/iptables
-      iptables-save > /etc/iptables/rules.v4
+        mkdir -p /etc/iptables
+        apt-get update -qq
+        DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
+        iptables-save > /etc/iptables/rules.v4
+        ip6tables-save > /etc/iptables/rules.v6
+        netfilter-persistent save
     else
         echo "❌ Unknown system. Please save iptables rules manually."
         return 1

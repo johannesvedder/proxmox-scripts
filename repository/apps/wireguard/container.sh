@@ -64,6 +64,9 @@ iptables -A FORWARD -i "${MAIN_INTERFACE}" -o "${INTERFACE}" -m state --state RE
 # Masquerade outgoing traffic from VPN clients going out eth0
 iptables -t nat -A POSTROUTING -s "${SUBNET}" -o "${MAIN_INTERFACE}" -j MASQUERADE
 
+# Save iptables rules
+rc-service iptables save
+
 # Create server config
 cat > /etc/wireguard/${INTERFACE}.conf <<EOF
 [Interface]
