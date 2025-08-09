@@ -120,6 +120,53 @@ EOF
 chmod +x /opt/nginx-proxy-manager/manage.sh
 ln -sf /opt/nginx-proxy-manager/manage.sh /usr/local/bin/npm-manage
 
+#!/bin/sh
+
+echo "🛠️ Setting up Nginx Proxy Manager to start on boot (Alpine/OpenRC)..."
+
+# Create OpenRC service script
+cat > /etc/init.d/nginx-proxy-manager << 'EOF'
+#!/sbin/openrc-run
+
+command="/usr/bin/docker-compose"
+command_args="up -d"
+directory="/opt/nginx-proxy-manager"
+
+depend() {
+    after docker
+    need docker
+    before net
+}
+
+start_pre() {
+    [ -d "$directory" ] || return 1
+}
+
+start() {
+    ebegin "Starting Nginx Proxy Manager"
+    start-stop-daemon --start --chdir "$directory" --exec "$command" -- $command_args
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping Nginx Proxy Manager"
+    start-stop-daemon --stop --exec "$command"
+    eend $?
+}
+EOF
+
+# Make script executable
+chmod +x /etc/init.d/nginx-proxy-manager
+
+# Add service to default runlevel
+rc-update add nginx-proxy-manager default
+
+# Start the service now
+rc-service nginx-proxy-manager start
+
+echo "✅ Nginx Proxy Manager service installed and started."
+
+
 echo ""
 echo "🎉 Setup Complete! 🎉"
 echo ""
