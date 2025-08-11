@@ -50,6 +50,58 @@ echo "🔧 Setting up configuration directories..."
 mkdir -p /opt/nginx-proxy-manager/config /opt/nginx-proxy-manager/data /opt/nginx-proxy-manager/letsencrypt
 chmod 755 /opt/nginx-proxy-manager/config /opt/nginx-proxy-manager/data /opt/nginx-proxy-manager/letsencrypt
 
+read -rp "Do you want to setup SSL certificates and nginx config? (y/n): " answer
+if [[ "$answer" != [Yy]* ]]; then
+  echo "Setup aborted."
+  exit 0
+fi
+
+# Paths
+SSL_DIR="/opt/nginx-proxy-manager/data/custom_ssl/npm-15"
+NGINX_CUSTOM_DIR="/opt/nginx-proxy-manager/data/nginx/custom"
+HTTP_CONF_FILE="$NGINX_CUSTOM_DIR/http.conf"
+
+echo "Creating SSL certificates in $SSL_DIR..."
+mkdir -p "$SSL_DIR"
+openssl req -x509 -nodes -days 365 \
+  -newkey rsa:2048 \
+  -keyout "$SSL_DIR/privkey.pem" \
+  -out "$SSL_DIR/fullchain.pem" \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+chmod 444 "$SSL_DIR/privkey.pem" "$SSL_DIR/fullchain.pem"
+echo "SSL certs created and set to read-only."
+
+echo "Creating nginx config in $NGINX_CUSTOM_DIR..."
+mkdir -p "$NGINX_CUSTOM_DIR"
+
+cat > "$HTTP_CONF_FILE" <<'EOF'
+# --- BEGIN GENERATED CONFIG ---
+server {
+    listen 443 ssl default_server;
+    server_name $CONTAINER_IP;  # internal/VPN IP
+
+    ssl_certificate /data/custom_ssl/npm-15/fullchain.pem;
+    ssl_certificate_key /data/custom_ssl/npm-15/privkey.pem;
+
+    location / {
+        # Allow VPN + LAN (same subnet)
+        allow $INTERNAL_SUBNET;
+        deny all;
+
+        proxy_pass http://127.0.0.1:81;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+# --- END GENERATED CONFIG ---
+EOF
+
+chmod 444 "$HTTP_CONF_FILE"
+echo "nginx config created and set to read-only."
+
 echo "🚀 Starting Nginx Proxy Manager..."
 cd /opt/nginx-proxy-manager && docker-compose up -d
 
